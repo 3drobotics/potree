@@ -15,8 +15,8 @@
     <script src="../build/deps/jquery/jquery.min.js"></script>
     <script src="../build/potree/potree.js"></script>
 
-    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-		<div id="potree_render_area"></div>
+    <div class="potree_container">
+		    <div id="potree_render_area"></div>
     </div>
 
 	<script>
@@ -39,7 +39,7 @@
 			material.shape = Potree.PointShape.SQUARE;
 
 			scene.addPointCloud(pointcloud);
-			
+
 			//scene.view.position.set(589974.341, 231698.397, 986.146);
 			//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
 			 viewer.fitToScreen();

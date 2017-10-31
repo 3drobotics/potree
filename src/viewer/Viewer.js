@@ -9,35 +9,35 @@
 const THREE = require('three');
 const TWEEN = require('@tweenjs/tween.js');
 const $ = require('../jquery');
-const ClipMode = require('../materials/ClipMode');
+// const ClipMode = require('../materials/ClipMode');
 const Scene = require('./Scene');
 const InputHandler = require('../navigation/InputHandler');
-const MeasuringTool = require('../utils/MeasuringTool');
-const ProfileTool = require('../utils/ProfileTool');
-const VolumeTool = require('../utils/VolumeTool');
-const TransformationTool = require('../utils/TransformationTool');
+// const MeasuringTool = require('../utils/MeasuringTool');
+// const ProfileTool = require('../utils/ProfileTool');
+// const VolumeTool = require('../utils/VolumeTool');
+// const TransformationTool = require('../utils/TransformationTool');
 const FirstPersonControls = require('../navigation/FirstPersonControls');
-const MapView = require('./MapView');
-const ProfileWindowController = require('../ProfileWindowController');
-const ProfileWindow = require('../ProfileWindow');
-const PointColorType = require('../materials/PointColorType');
+// const MapView = require('./MapView');
+// const ProfileWindowController = require('../ProfileWindowController');
+// const ProfileWindow = require('../ProfileWindow');
+// const PointColorType = require('../materials/PointColorType');
 const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
 const getParameterByName = require('../utils/getParameterByName');
-const loadSkybox = require('../utils/loadSkybox');
+// const loadSkybox = require('../utils/loadSkybox');
 const context = require('../context');
-const ClippingTool = require('../utils/ClippingTool');
+// const ClippingTool = require('../utils/ClippingTool');
 const NavigationCube = require('./NavigationCube');
 const CameraMode = require('./CameraMode');
 const OrbitControls = require('../navigation/OrbitControls');
 const EarthControls = require('../navigation/EarthControls');
-const initSidebar = require('./initSidebar');
+// const initSidebar = require('./initSidebar');
 const Features = require('../Features');
-const i18n = require('../i18n');
+// const i18n = require('../i18n');
 const ProgressBar = require('./ProgressBar');
 const Stats = require('stats.js');
 const updatePointClouds = require('../utils/updatePointClouds');
 const GLQueries = require('../webgl/GLQueries');
-const projectedRadiusOrtho = require('../utils/projectedRadiusOrtho');
+// const projectedRadiusOrtho = require('../utils/projectedRadiusOrtho');
 const zoomTo = require('../utils/zoomTo');
 
 class PotreeViewer extends THREE.EventDispatcher {
@@ -123,11 +123,11 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 		this.inputHandler = null;
 
-		this.measuringTool = null;
-		this.profileTool = null;
-		this.volumeTool = null;
-		this.clippingTool = null;
-		this.transformationTool = null;
+		// this.measuringTool = null;
+		// this.profileTool = null;
+		// this.volumeTool = null;
+		// this.clippingTool = null;
+		// this.transformationTool = null;
 		this.navigationCube = null;
 
 		this.skybox = null;
@@ -143,20 +143,20 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.inputHandler = new InputHandler(this);
 			this.inputHandler.setScene(this.scene);
 
-			this.measuringTool = new MeasuringTool(this);
-			this.profileTool = new ProfileTool(this);
-			this.volumeTool = new VolumeTool(this);
-			this.clippingTool = new ClippingTool(this);
-			this.transformationTool = new TransformationTool(this);
+			// this.measuringTool = new MeasuringTool(this);
+			// this.profileTool = new ProfileTool(this);
+			// this.volumeTool = new VolumeTool(this);
+			// this.clippingTool = new ClippingTool(this);
+			// this.transformationTool = new TransformationTool(this);
 			this.navigationCube = new NavigationCube(this);
 			this.navigationCube.visible = false;
 
 			this.createControls();
 
-			this.measuringTool.setScene(this.scene);
-			this.profileTool.setScene(this.scene);
-			this.volumeTool.setScene(this.scene);
-			this.clippingTool.setScene(this.scene);
+			// this.measuringTool.setScene(this.scene);
+			// this.profileTool.setScene(this.scene);
+			// this.volumeTool.setScene(this.scene);
+			// this.clippingTool.setScene(this.scene);
 
 			let onPointcloudAdded = (e) => {
 				if (this.scene.pointclouds.length === 1) {
@@ -168,10 +168,10 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 			this.addEventListener('scene_changed', (e) => {
 				this.inputHandler.setScene(e.scene);
-				this.measuringTool.setScene(e.scene);
-				this.profileTool.setScene(e.scene);
-				this.volumeTool.setScene(e.scene);
-				this.clippingTool.setScene(this.scene);
+				// this.measuringTool.setScene(e.scene);
+				// this.profileTool.setScene(e.scene);
+				// this.volumeTool.setScene(e.scene);
+				// this.clippingTool.setScene(this.scene);
 
 				if (!e.scene.hasEventListener('pointcloud_added', onPointcloudAdded)) {
 					e.scene.addEventListener('pointcloud_added', onPointcloudAdded);
@@ -186,7 +186,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.setEDLEnabled(false);
 			this.setEDLRadius(1.4);
 			this.setEDLStrength(0.4);
-			this.clippingTool.setClipMode(ClipMode.HIGHLIGHT);
+			// this.clippingTool.setClipMode(ClipMode.HIGHLIGHT);
 			this.setPointBudget(1 * 1000 * 1000);
 			this.setShowBoundingBox(false);
 			this.setFreeze(false);
@@ -201,7 +201,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		// start rendering!
 		requestAnimationFrame(this.loop.bind(this));
 
-		this.loadGUI = this.loadGUI.bind(this);
+		// this.loadGUI = this.loadGUI.bind(this);
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -414,13 +414,13 @@ class PotreeViewer extends THREE.EventDispatcher {
 		return this.fov;
 	};
 
-	setClipMode (clipMode) {
-		return this.clippingTool.setClipMode(clipMode);
-	};
-
-	getClipMode () {
-		return this.clippingTool.getClipMode();
-	};
+	// setClipMode (clipMode) {
+	// 	return this.clippingTool.setClipMode(clipMode);
+	// };
+	//
+	// getClipMode () {
+	// 	return this.clippingTool.getClipMode();
+	// };
 
 	disableAnnotations () {
 		this.scene.annotations.traverse(annotation => {
@@ -464,69 +464,69 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.dispatchEvent({'type': 'length_unit_changed', 'viewer': this, value: value});
 	}
 
-	toMaterialID (materialName) {
-		if (materialName === 'RGB') {
-			return PointColorType.RGB;
-		} else if (materialName === 'Color') {
-			return PointColorType.COLOR;
-		} else if (materialName === 'Elevation') {
-			return PointColorType.HEIGHT;
-		} else if (materialName === 'Intensity') {
-			return PointColorType.INTENSITY;
-		} else if (materialName === 'Intensity Gradient') {
-			return PointColorType.INTENSITY_GRADIENT;
-		} else if (materialName === 'Classification') {
-			return PointColorType.CLASSIFICATION;
-		} else if (materialName === 'Return Number') {
-			return PointColorType.RETURN_NUMBER;
-		} else if (materialName === 'Source') {
-			return PointColorType.SOURCE;
-		} else if (materialName === 'Level of Detail') {
-			return PointColorType.LOD;
-		} else if (materialName === 'Point Index') {
-			return PointColorType.POINT_INDEX;
-		} else if (materialName === 'Normal') {
-			return PointColorType.NORMAL;
-		} else if (materialName === 'Phong') {
-			return PointColorType.PHONG;
-		} else if (materialName === 'RGB and Elevation') {
-			return PointColorType.RGB_HEIGHT;
-		} else if (materialName === 'Composite') {
-			return PointColorType.COMPOSITE;
-		}
-	};
-
-	toMaterialName (materialID) {
-		if (materialID === PointColorType.RGB) {
-			return 'RGB';
-		} else if (materialID === PointColorType.COLOR) {
-			return 'Color';
-		} else if (materialID === PointColorType.HEIGHT) {
-			return 'Elevation';
-		} else if (materialID === PointColorType.INTENSITY) {
-			return 'Intensity';
-		} else if (materialID === PointColorType.INTENSITY_GRADIENT) {
-			return 'Intensity Gradient';
-		} else if (materialID === PointColorType.CLASSIFICATION) {
-			return 'Classification';
-		} else if (materialID === PointColorType.RETURN_NUMBER) {
-			return 'Return Number';
-		} else if (materialID === PointColorType.SOURCE) {
-			return 'Source';
-		} else if (materialID === PointColorType.LOD) {
-			return 'Level of Detail';
-		} else if (materialID === PointColorType.POINT_INDEX) {
-			return 'Point Index';
-		} else if (materialID === PointColorType.NORMAL) {
-			return 'Normal';
-		} else if (materialID === PointColorType.PHONG) {
-			return 'Phong';
-		} else if (materialID === PointColorType.RGB_HEIGHT) {
-			return 'RGB and Elevation';
-		} else if (materialID === PointColorType.COMPOSITE) {
-			return 'Composite';
-		}
-	};
+	// toMaterialID (materialName) {
+	// 	if (materialName === 'RGB') {
+	// 		return PointColorType.RGB;
+	// 	} else if (materialName === 'Color') {
+	// 		return PointColorType.COLOR;
+	// 	} else if (materialName === 'Elevation') {
+	// 		return PointColorType.HEIGHT;
+	// 	} else if (materialName === 'Intensity') {
+	// 		return PointColorType.INTENSITY;
+	// 	} else if (materialName === 'Intensity Gradient') {
+	// 		return PointColorType.INTENSITY_GRADIENT;
+	// 	} else if (materialName === 'Classification') {
+	// 		return PointColorType.CLASSIFICATION;
+	// 	} else if (materialName === 'Return Number') {
+	// 		return PointColorType.RETURN_NUMBER;
+	// 	} else if (materialName === 'Source') {
+	// 		return PointColorType.SOURCE;
+	// 	} else if (materialName === 'Level of Detail') {
+	// 		return PointColorType.LOD;
+	// 	} else if (materialName === 'Point Index') {
+	// 		return PointColorType.POINT_INDEX;
+	// 	} else if (materialName === 'Normal') {
+	// 		return PointColorType.NORMAL;
+	// 	} else if (materialName === 'Phong') {
+	// 		return PointColorType.PHONG;
+	// 	} else if (materialName === 'RGB and Elevation') {
+	// 		return PointColorType.RGB_HEIGHT;
+	// 	} else if (materialName === 'Composite') {
+	// 		return PointColorType.COMPOSITE;
+	// 	}
+	// };
+	//
+	// toMaterialName (materialID) {
+	// 	if (materialID === PointColorType.RGB) {
+	// 		return 'RGB';
+	// 	} else if (materialID === PointColorType.COLOR) {
+	// 		return 'Color';
+	// 	} else if (materialID === PointColorType.HEIGHT) {
+	// 		return 'Elevation';
+	// 	} else if (materialID === PointColorType.INTENSITY) {
+	// 		return 'Intensity';
+	// 	} else if (materialID === PointColorType.INTENSITY_GRADIENT) {
+	// 		return 'Intensity Gradient';
+	// 	} else if (materialID === PointColorType.CLASSIFICATION) {
+	// 		return 'Classification';
+	// 	} else if (materialID === PointColorType.RETURN_NUMBER) {
+	// 		return 'Return Number';
+	// 	} else if (materialID === PointColorType.SOURCE) {
+	// 		return 'Source';
+	// 	} else if (materialID === PointColorType.LOD) {
+	// 		return 'Level of Detail';
+	// 	} else if (materialID === PointColorType.POINT_INDEX) {
+	// 		return 'Point Index';
+	// 	} else if (materialID === PointColorType.NORMAL) {
+	// 		return 'Normal';
+	// 	} else if (materialID === PointColorType.PHONG) {
+	// 		return 'Phong';
+	// 	} else if (materialID === PointColorType.RGB_HEIGHT) {
+	// 		return 'RGB and Elevation';
+	// 	} else if (materialID === PointColorType.COMPOSITE) {
+	// 		return 'Composite';
+	// 	}
+	// };
 
 	zoomTo (node, factor) {
 		let view = this.scene.view;
@@ -600,87 +600,87 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.navigationCube.visible = !this.navigationCube.visible;
 	}
 
-	setView (view) {
-		if (!view) return;
+	// setView (view) {
+	// 	if (!view) return;
+	//
+	// 	switch (view) {
+	// 		case 'F':
+	// 			this.setFrontView();
+	// 			break;
+	// 		case 'B':
+	// 			this.setBackView();
+	// 			break;
+	// 		case 'L':
+	// 			this.setLeftView();
+	// 			break;
+	// 		case 'R':
+	// 			this.setRightView();
+	// 			break;
+	// 		case 'U':
+	// 			this.setTopView();
+	// 			break;
+	// 		case 'D':
+	// 			this.setBottomView();
+	// 			break;
+	// 	}
+	// }
+	//
+	// setTopView () {
+	// 	this.scene.view.yaw = 0;
+	// 	this.scene.view.pitch = -Math.PI / 2;
+	//
+	// 	this.fitToScreen();
+	// };
+	//
+	// setBottomView () {
+	// 	this.scene.view.yaw = -Math.PI;
+	// 	this.scene.view.pitch = Math.PI / 2;
+	//
+	// 	this.fitToScreen();
+	// };
+	//
+	// setFrontView () {
+	// 	this.scene.view.yaw = 0;
+	// 	this.scene.view.pitch = 0;
+	//
+	// 	this.fitToScreen();
+	// };
+	//
+	// setBackView () {
+	// 	this.scene.view.yaw = Math.PI;
+	// 	this.scene.view.pitch = 0;
+	//
+	// 	this.fitToScreen();
+	// };
+	//
+	// setLeftView () {
+	// 	this.scene.view.yaw = -Math.PI / 2;
+	// 	this.scene.view.pitch = 0;
+	//
+	// 	this.fitToScreen();
+	// };
+	//
+	// setRightView () {
+	// 	this.scene.view.yaw = Math.PI / 2;
+	// 	this.scene.view.pitch = 0;
+	//
+	// 	this.fitToScreen();
+	// };
+	//
+	// flipYZ () {
+	// 	this.isFlipYZ = !this.isFlipYZ;
+	//
+	// 	// TODO flipyz
+	// 	console.log('TODO');
+	// };
 
-		switch (view) {
-			case 'F':
-				this.setFrontView();
-				break;
-			case 'B':
-				this.setBackView();
-				break;
-			case 'L':
-				this.setLeftView();
-				break;
-			case 'R':
-				this.setRightView();
-				break;
-			case 'U':
-				this.setTopView();
-				break;
-			case 'D':
-				this.setBottomView();
-				break;
-		}
-	}
-
-	setTopView () {
-		this.scene.view.yaw = 0;
-		this.scene.view.pitch = -Math.PI / 2;
-
-		this.fitToScreen();
-	};
-
-	setBottomView () {
-		this.scene.view.yaw = -Math.PI;
-		this.scene.view.pitch = Math.PI / 2;
-
-		this.fitToScreen();
-	};
-
-	setFrontView () {
-		this.scene.view.yaw = 0;
-		this.scene.view.pitch = 0;
-
-		this.fitToScreen();
-	};
-
-	setBackView () {
-		this.scene.view.yaw = Math.PI;
-		this.scene.view.pitch = 0;
-
-		this.fitToScreen();
-	};
-
-	setLeftView () {
-		this.scene.view.yaw = -Math.PI / 2;
-		this.scene.view.pitch = 0;
-
-		this.fitToScreen();
-	};
-
-	setRightView () {
-		this.scene.view.yaw = Math.PI / 2;
-		this.scene.view.pitch = 0;
-
-		this.fitToScreen();
-	};
-
-	flipYZ () {
-		this.isFlipYZ = !this.isFlipYZ;
-
-		// TODO flipyz
-		console.log('TODO');
-	};
-
-	switchCameraMode (mode) {
-		this.scene.cameraMode = mode;
-
-		for (let pointcloud of this.scene.pointclouds) {
-			pointcloud.material.useOrthographicCamera = mode === CameraMode.ORTHOGRAPHIC;
-		}
-	}
+	// switchCameraMode (mode) {
+	// 	this.scene.cameraMode = mode;
+	//
+	// 	for (let pointcloud of this.scene.pointclouds) {
+	// 		pointcloud.material.useOrthographicCamera = mode === CameraMode.ORTHOGRAPHIC;
+	// 	}
+	// }
 
 	loadSettingsFromURL () {
 		if (getParameterByName('pointSize')) {
@@ -775,13 +775,13 @@ class PotreeViewer extends THREE.EventDispatcher {
 	// Viewer Internals
 	// ------------------------------------------------------------------------------------
 
-	getSkybox () {
-		if (!this.skybox) {
-			this.skybox = loadSkybox(new URL(context.resourcePath + '/textures/skybox2/').href);
-		}
-
-		return this.skybox;
-	}
+	// getSkybox () {
+	// 	if (!this.skybox) {
+	// 		this.skybox = loadSkybox(new URL(context.resourcePath + '/textures/skybox2/').href);
+	// 	}
+	//
+	// 	return this.skybox;
+	// }
 
 	createControls () {
 		{ // create FIRST PERSON CONTROLS
@@ -823,94 +823,94 @@ class PotreeViewer extends THREE.EventDispatcher {
 		}
 	};
 
-	toggleSidebar () {
-		let renderArea = $('#potree_render_area');
-		let isVisible = renderArea.css('left') !== '0px';
+	// toggleSidebar () {
+	// 	let renderArea = $('#potree_render_area');
+	// 	let isVisible = renderArea.css('left') !== '0px';
+	//
+	// 	if (isVisible) {
+	// 		renderArea.css('left', '0px');
+	// 	} else {
+	// 		renderArea.css('left', '300px');
+	// 	}
+	// };
 
-		if (isVisible) {
-			renderArea.css('left', '0px');
-		} else {
-			renderArea.css('left', '300px');
-		}
-	};
+	// toggleMap () {
+	// 	// let map = $('#potree_map');
+	// 	// map.toggle(100);
+	//
+	// 	if (this.mapView) {
+	// 		this.mapView.toggle();
+	// 	}
+	// };
 
-	toggleMap () {
-		// let map = $('#potree_map');
-		// map.toggle(100);
+	// loadGUI (callback) {
+	// 	let viewer = this;
+	// 	let sidebarContainer = $('#potree_sidebar_container');
+	// 	sidebarContainer.load(new URL(context.scriptPath + '/sidebar.html').href, () => {
+	// 		sidebarContainer.css('width', '300px');
+	// 		sidebarContainer.css('height', '100%');
+	//
+	// 		let imgMenuToggle = document.createElement('img');
+	// 		imgMenuToggle.src = new URL(context.resourcePath + '/icons/menu_button.svg').href;
+	// 		imgMenuToggle.onclick = this.toggleSidebar;
+	// 		imgMenuToggle.classList.add('potree_menu_toggle');
+	//
+	// 		let imgMapToggle = document.createElement('img');
+	// 		imgMapToggle.src = new URL(context.resourcePath + '/icons/map_icon.png').href;
+	// 		imgMapToggle.style.display = 'none';
+	// 		imgMapToggle.onclick = e => { this.toggleMap(); };
+	// 		imgMapToggle.id = 'potree_map_toggle';
+	//
+	// 		viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
+	// 		viewer.renderArea.insertBefore(imgMenuToggle, viewer.renderArea.children[0]);
+	//
+	// 		this.mapView = new MapView(this);
+	// 		this.mapView.init();
+	//
+	// 		i18n.init({
+	// 			lng: 'en',
+	// 			resGetPath: context.resourcePath + '/lang/__lng__/__ns__.json',
+	// 			preload: ['en', 'fr', 'de', 'jp'],
+	// 			getAsync: true,
+	// 			debug: false
+	// 		}, function (t) {
+	// 			// Start translation once everything is loaded
+	// 			$('body').i18n();
+	// 		});
+	//
+	// 		$(() => {
+	// 			initSidebar(this);
+	// 		});
+	//
+	// 		let elProfile = $('<div>').load(new URL(context.scriptPath + '/profile.html').href, () => {
+	// 			$(document.body).append(elProfile.children());
+	// 			this.profileWindow = new ProfileWindow(this);
+	// 			this.profileWindowController = new ProfileWindowController(this);
+	//
+	// 			$('#profile_window').draggable({
+	// 				handle: $('#profile_titlebar'),
+	// 				containment: $(document.body)
+	// 			});
+	// 			$('#profile_window').resizable({
+	// 				containment: $(document.body),
+	// 				handles: 'n, e, s, w'
+	// 			});
+	//
+	// 			if (callback) {
+	// 				$(callback);
+	// 			}
+	// 		});
+	// 	});
+	// }
 
-		if (this.mapView) {
-			this.mapView.toggle();
-		}
-	};
+	// setLanguage (lang) {
+	// 	i18n.setLng(lang);
+	// 	$('body').i18n();
+	// }
 
-	loadGUI (callback) {
-		let viewer = this;
-		let sidebarContainer = $('#potree_sidebar_container');
-		sidebarContainer.load(new URL(context.scriptPath + '/sidebar.html').href, () => {
-			sidebarContainer.css('width', '300px');
-			sidebarContainer.css('height', '100%');
-
-			let imgMenuToggle = document.createElement('img');
-			imgMenuToggle.src = new URL(context.resourcePath + '/icons/menu_button.svg').href;
-			imgMenuToggle.onclick = this.toggleSidebar;
-			imgMenuToggle.classList.add('potree_menu_toggle');
-
-			let imgMapToggle = document.createElement('img');
-			imgMapToggle.src = new URL(context.resourcePath + '/icons/map_icon.png').href;
-			imgMapToggle.style.display = 'none';
-			imgMapToggle.onclick = e => { this.toggleMap(); };
-			imgMapToggle.id = 'potree_map_toggle';
-
-			viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
-			viewer.renderArea.insertBefore(imgMenuToggle, viewer.renderArea.children[0]);
-
-			this.mapView = new MapView(this);
-			this.mapView.init();
-
-			i18n.init({
-				lng: 'en',
-				resGetPath: context.resourcePath + '/lang/__lng__/__ns__.json',
-				preload: ['en', 'fr', 'de', 'jp'],
-				getAsync: true,
-				debug: false
-			}, function (t) {
-				// Start translation once everything is loaded
-				$('body').i18n();
-			});
-
-			$(() => {
-				initSidebar(this);
-			});
-
-			let elProfile = $('<div>').load(new URL(context.scriptPath + '/profile.html').href, () => {
-				$(document.body).append(elProfile.children());
-				this.profileWindow = new ProfileWindow(this);
-				this.profileWindowController = new ProfileWindowController(this);
-
-				$('#profile_window').draggable({
-					handle: $('#profile_titlebar'),
-					containment: $(document.body)
-				});
-				$('#profile_window').resizable({
-					containment: $(document.body),
-					handles: 'n, e, s, w'
-				});
-
-				if (callback) {
-					$(callback);
-				}
-			});
-		});
-	}
-
-	setLanguage (lang) {
-		i18n.setLng(lang);
-		$('body').i18n();
-	}
-
-	setServer (server) {
-		this.server = server;
-	}
+	// setServer (server) {
+	// 	this.server = server;
+	// }
 
 	initThree () {
 		let width = this.renderArea.clientWidth;
@@ -933,98 +933,98 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.renderer.context.getExtension('EXT_frag_depth');
 	}
 
-	updateAnnotations () {
-		if (!this.getShowAnnotations()) {
-			this.scene.annotations.traverseDescendants(descendant => {
-				descendant.display = false;
-			});
-
-			return;
-		}
-
-		this.scene.annotations.updateBounds();
-		this.scene.cameraP.updateMatrixWorld();
-		this.scene.cameraO.updateMatrixWorld();
-
-		// TODO: Unused: let distances = [];
-
-		// TODO: Unused: let renderAreaWidth = this.renderArea.clientWidth;
-		// TODO: Unused: let renderAreaHeight = this.renderArea.clientHeight;
-		let viewer = this;
-		this.scene.annotations.traverse(annotation => {
-			if (annotation === this.scene.annotations) {
-				annotation.display = false;
-				return true;
-			}
-
-			if (!annotation.visible) {
-				return false;
-			}
-
-			annotation.scene = this.scene;
-
-			let element = annotation.domElement;
-
-			let position = annotation.position;
-			if (!position) {
-				position = annotation.boundingBox.getCenter();
-			}
-
-			let distance = viewer.scene.cameraP.position.distanceTo(position);
-
-			let radius = annotation.boundingBox.getBoundingSphere().radius;
-
-			let screenPos = new THREE.Vector3();
-			let screenSize = 0;
-
-			/* eslint-disable no-lone-blocks */
-			{
-				// SCREEN POS
-				screenPos.copy(position).project(this.scene.getActiveCamera());
-				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
-				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
-
-				// screenPos.x = Math.floor(screenPos.x - element[0].clientWidth / 2);
-				// screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
-				screenPos.x = Math.floor(screenPos.x);
-				screenPos.y = Math.floor(screenPos.y);
-
-				// SCREEN SIZE
-				if (viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
-					let fov = Math.PI * viewer.scene.cameraP.fov / 180;
-					let slope = Math.tan(fov / 2.0);
-					let projFactor = 0.5 * this.renderArea.clientHeight / (slope * distance);
-					screenSize = radius * projFactor;
-				} else {
-					screenSize = projectedRadiusOrtho(radius, viewer.scene.cameraO.projectionMatrix, this.renderArea.clientWidth, this.renderArea.clientHeight);
-				}
-			}
-
-			element[0].style.left = screenPos.x + 'px';
-			element[0].style.top = screenPos.y + 'px';
-
-			/*
-			TODO: Unused:
-			let zIndex = 10000000 - distance * (10000000 / this.scene.cameraP.far);
-			if (annotation.descriptionVisible) {
-				zIndex += 10000000;
-			}
-			*/
-
-			if (annotation.children.length > 0) {
-				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.getActiveCamera().position.position);
-				annotation.expand = expand;
-
-				if (!expand) {
-					annotation.display = (screenPos.z >= -1 && screenPos.z <= 1);
-				}
-
-				return expand;
-			} else {
-				annotation.display = (screenPos.z >= -1 && screenPos.z <= 1);
-			}
-		});
-	}
+	// updateAnnotations () {
+	// 	if (!this.getShowAnnotations()) {
+	// 		this.scene.annotations.traverseDescendants(descendant => {
+	// 			descendant.display = false;
+	// 		});
+	//
+	// 		return;
+	// 	}
+	//
+	// 	this.scene.annotations.updateBounds();
+	// 	this.scene.cameraP.updateMatrixWorld();
+	// 	this.scene.cameraO.updateMatrixWorld();
+	//
+	// 	// TODO: Unused: let distances = [];
+	//
+	// 	// TODO: Unused: let renderAreaWidth = this.renderArea.clientWidth;
+	// 	// TODO: Unused: let renderAreaHeight = this.renderArea.clientHeight;
+	// 	let viewer = this;
+	// 	this.scene.annotations.traverse(annotation => {
+	// 		if (annotation === this.scene.annotations) {
+	// 			annotation.display = false;
+	// 			return true;
+	// 		}
+	//
+	// 		if (!annotation.visible) {
+	// 			return false;
+	// 		}
+	//
+	// 		annotation.scene = this.scene;
+	//
+	// 		let element = annotation.domElement;
+	//
+	// 		let position = annotation.position;
+	// 		if (!position) {
+	// 			position = annotation.boundingBox.getCenter();
+	// 		}
+	//
+	// 		let distance = viewer.scene.cameraP.position.distanceTo(position);
+	//
+	// 		let radius = annotation.boundingBox.getBoundingSphere().radius;
+	//
+	// 		let screenPos = new THREE.Vector3();
+	// 		let screenSize = 0;
+	//
+	// 		/* eslint-disable no-lone-blocks */
+	// 		{
+	// 			// SCREEN POS
+	// 			screenPos.copy(position).project(this.scene.getActiveCamera());
+	// 			screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
+	// 			screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
+	//
+	// 			// screenPos.x = Math.floor(screenPos.x - element[0].clientWidth / 2);
+	// 			// screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
+	// 			screenPos.x = Math.floor(screenPos.x);
+	// 			screenPos.y = Math.floor(screenPos.y);
+	//
+	// 			// SCREEN SIZE
+	// 			if (viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+	// 				let fov = Math.PI * viewer.scene.cameraP.fov / 180;
+	// 				let slope = Math.tan(fov / 2.0);
+	// 				let projFactor = 0.5 * this.renderArea.clientHeight / (slope * distance);
+	// 				screenSize = radius * projFactor;
+	// 			} else {
+	// 				screenSize = projectedRadiusOrtho(radius, viewer.scene.cameraO.projectionMatrix, this.renderArea.clientWidth, this.renderArea.clientHeight);
+	// 			}
+	// 		}
+	//
+	// 		element[0].style.left = screenPos.x + 'px';
+	// 		element[0].style.top = screenPos.y + 'px';
+	//
+	// 		/*
+	// 		TODO: Unused:
+	// 		let zIndex = 10000000 - distance * (10000000 / this.scene.cameraP.far);
+	// 		if (annotation.descriptionVisible) {
+	// 			zIndex += 10000000;
+	// 		}
+	// 		*/
+	//
+	// 		if (annotation.children.length > 0) {
+	// 			let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.getActiveCamera().position.position);
+	// 			annotation.expand = expand;
+	//
+	// 			if (!expand) {
+	// 				annotation.display = (screenPos.z >= -1 && screenPos.z <= 1);
+	// 			}
+	//
+	// 			return expand;
+	// 		} else {
+	// 			annotation.display = (screenPos.z >= -1 && screenPos.z <= 1);
+	// 		}
+	// 	});
+	// }
 
 	update (delta, timestamp) {
 		// if(window.urlToggle === undefined){
@@ -1208,8 +1208,8 @@ class PotreeViewer extends THREE.EventDispatcher {
 			// set clip volumes in material
 			for (let pointcloud of this.scene.pointclouds) {
 				pointcloud.material.setClipBoxes(clipBoxes);
-				pointcloud.material.setClipPolygons(clipPolygons, this.clippingTool.maxPolygonVertices);
-				pointcloud.material.clipMode = this.clippingTool.clipMode;
+				// pointcloud.material.setClipPolygons(clipPolygons, this.clippingTool.maxPolygonVertices);
+				// pointcloud.material.clipMode = this.clippingTool.clipMode;
 			}
 		}
 
@@ -1217,7 +1217,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.navigationCube.update(camera.rotation);
 		}
 
-		this.updateAnnotations();
+		// this.updateAnnotations();
 
 		if (this.mapView) {
 			this.mapView.update(delta);
@@ -1252,8 +1252,8 @@ class PotreeViewer extends THREE.EventDispatcher {
 		const queries = GLQueries.forGL(this.renderer.getContext());
 		queries.start('frame');
 
-		if(this.useSnapshot){
-			if(!this.snapshotRenderer){
+		if (this.useSnapshot) {
+			if (!this.snapshotRenderer) {
 				const SnapshotRenderer = require('./SnapshotRenderer');
 				this.snapshotRenderer = new SnapshotRenderer(this);
 			}
