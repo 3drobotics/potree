@@ -12,5 +12,5 @@ module.exports = require('./Potree');
 // window.HoverMenu = require('./stuff/HoverMenu');
 // THREE & proj4 used to be exposed, it still is
 // window.proj4 = require('proj4');
-window.THREE = require('three');
+// window.THREE = require('three');
 // require('three-ply-loader')(window.THREE);

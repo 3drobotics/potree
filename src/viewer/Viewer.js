@@ -1,3 +1,4 @@
+
 // let getQueryParam = function(name) {
 //    name = name.replace(/[\[\]]/g, "\\$&");
 //    let regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
@@ -8,7 +9,7 @@
 // }
 const THREE = require('three');
 const TWEEN = require('@tweenjs/tween.js');
-const $ = require('../jquery');
+const $ = require('jquery');
 // const ClipMode = require('../materials/ClipMode');
 const Scene = require('./Scene');
 const InputHandler = require('../navigation/InputHandler');
@@ -562,11 +563,11 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.dispatchEvent({'type': 'zoom_to', 'viewer': this});
 	};
 
-	showAbout () {
-		$(function () {
-			$('#about-panel').dialog();
-		});
-	};
+	// showAbout () {
+	// 	$(function () {
+	// 		$('#about-panel').dialog();
+	// 	});
+	// };
 
 	getBoundingBox (pointclouds) {
 		pointclouds = pointclouds || this.scene.pointclouds;
