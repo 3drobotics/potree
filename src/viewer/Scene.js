@@ -1,5 +1,5 @@
 const THREE = require('three');
-const Annotation = require('../Annotation');
+// const Annotation = require('../Annotation');
 const View = require('./View');
 const createGrid = require('../utils/createGrid');
 const createBackgroundTexture = require('../utils/createBackgroundTexture');
@@ -9,7 +9,7 @@ class Scene extends THREE.EventDispatcher {
 	constructor () {
 		super();
 
-		this.annotations = new Annotation();
+		// this.annotations = new Annotation();
 		this.scene = new THREE.Scene();
 		this.scenePointCloud = new THREE.Scene();
 		this.sceneBG = new THREE.Scene();
@@ -304,19 +304,19 @@ class Scene extends THREE.EventDispatcher {
 		}
 	}
 
-	addAnnotation (position, args = {}) {
-		if (position instanceof Array) {
-			args.position = new THREE.Vector3().fromArray(position);
-		} else if (position instanceof THREE.Vector3) {
-			args.position = position;
-		}
-		let annotation = new Annotation(args);
-		this.annotations.add(annotation);
-	}
-
-	getAnnotations () {
-		return this.annotations;
-	};
+	// addAnnotation (position, args = {}) {
+	// 	if (position instanceof Array) {
+	// 		args.position = new THREE.Vector3().fromArray(position);
+	// 	} else if (position instanceof THREE.Vector3) {
+	// 		args.position = position;
+	// 	}
+	// 	let annotation = new Annotation(args);
+	// 	this.annotations.add(annotation);
+	// }
+	//
+	// getAnnotations () {
+	// 	return this.annotations;
+	// };
 };
 
 module.exports = Scene;

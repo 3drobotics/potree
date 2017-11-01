@@ -1253,14 +1253,15 @@ class PotreeViewer extends THREE.EventDispatcher {
 		const queries = GLQueries.forGL(this.renderer.getContext());
 		queries.start('frame');
 
-		if (this.useSnapshot) {
-			if (!this.snapshotRenderer) {
-				const SnapshotRenderer = require('./SnapshotRenderer');
-				this.snapshotRenderer = new SnapshotRenderer(this);
-			}
-
-			this.snapshotRenderer.render(this.renderer);
-		} else if (this.useEDL && Features.SHADER_EDL.isSupported()) {
+		// if (this.useSnapshot) {
+			// if (!this.snapshotRenderer) {
+			// 	const SnapshotRenderer = require('./SnapshotRenderer');
+			// 	this.snapshotRenderer = new SnapshotRenderer(this);
+			// }
+			//
+			// this.snapshotRenderer.render(this.renderer);
+		// } else
+		if (this.useEDL && Features.SHADER_EDL.isSupported()) {
 			if (!this.edlRenderer) {
 				const EDLRenderer = require('./EDLRenderer');
 				this.edlRenderer = new EDLRenderer(this);

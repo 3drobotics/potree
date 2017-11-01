@@ -2,7 +2,7 @@ const PointCloudOctreeGeometry = require('../PointCloudOctreeGeometry');
 const PointCloudOctreeGeometryNode = require('../PointCloudOctreeGeometryNode');
 const Version = require('../Version');
 const THREE = require('three');
-const LasLazLoader = require('./LasLazLoader');
+// const LasLazLoader = require('./LasLazLoader');
 const BinaryLoader = require('./BinaryLoader');
 const PointAttributes = require('./PointAttributes');
 const PointAttribute = require('./PointAttribute');
@@ -71,14 +71,16 @@ POCLoader.load = function load (url, callback) {
 				pco.boundingSphere = boundingBox.getBoundingSphere();
 				pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
 				pco.offset = offset;
-				if (fMno.pointAttributes === 'LAS') {
-					pco.loader = new LasLazLoader(fMno.version);
-				} else if (fMno.pointAttributes === 'LAZ') {
-					pco.loader = new LasLazLoader(fMno.version);
-				} else {
-					pco.loader = new BinaryLoader(fMno.version, boundingBox, fMno.scale);
-					pco.pointAttributes = new PointAttributes(pco.pointAttributes);
-				}
+				// if (fMno.pointAttributes === 'LAS') {
+				// 	pco.loader = new LasLazLoader(fMno.version);
+				// } else if (fMno.pointAttributes === 'LAZ') {
+				// 	pco.loader = new LasLazLoader(fMno.version);
+				// } else {
+				// 	pco.loader = new BinaryLoader(fMno.version, boundingBox, fMno.scale);
+				// 	pco.pointAttributes = new PointAttributes(pco.pointAttributes);
+				// }
+				pco.loader = new BinaryLoader(fMno.version, boundingBox, fMno.scale);
+				pco.pointAttributes = new PointAttributes(pco.pointAttributes);
 
 				let nodes = {};
 
