@@ -20,12 +20,7 @@ const through = require('through');
 	const workerify = require('workerify');
 
 	const SCRIPTS = {
-		main: {source: 'src/index.js', target: 'build/potree/potree.js', args: {standalone: 'Potree'}},
-		bin: {source: 'src/workers/BinaryDecoderWorker.js', target: 'build/potree/workers/BinaryDecoderWorker.js'},
-		dem: {source: 'src/workers/DEMWorker.js', target: 'build/potree/workers/DEMWorker.js'},
-		gre: {source: 'src/workers/GreyhoundBinaryDecoderWorker.js', target: 'build/potree/workers/GreyhoundBinaryDecoderWorker.js'},
-		las: {source: 'src/workers/LASDecoderWorker.js', target: 'build/potree/workers/LASDecoderWorker.js'},
-		laz: {source: 'libs/plasio/workers/laz-loader-worker.js', target: 'build/potree/workers/LASLAZWorker.js'}
+		main: {source: 'src/index.js', target: 'build/potree/potree.js', args: {standalone: 'Potree'}}
 	};
 
 	function createBrowserify (script, isMin) {
@@ -97,13 +92,7 @@ const through = require('through');
 		license: {source: 'LICENSE', target: 'build/potree', cwd: '.'},
 		extra: {source: '{potree.css,profile.html,sidebar.html}', target: 'build/potree', cwd: 'src/viewer'},
 		examples: {source: '**/*', target: 'build/potree/examples', cwd: 'examples'},
-		pointclouds: {source: '**/*', target: 'build/pointclouds', cwd: 'pointclouds'},
-		jqueryUi: {source: '**/*', target: 'build/deps/jquery-ui', cwd: 'libs/jquery-ui'},
-		jquery: {source: '**/*', target: 'build/deps/jquery', cwd: 'node_modules/jquery/dist'},
-		perfectScrollbar: {source: '**/*', target: 'build/deps/perfect-scrollbar', cwd: 'node_modules/perfect-scrollbar'},
-		spectrumColorpicker: {source: '**/*', target: 'build/deps/spectrum-colorpicker', cwd: 'node_modules/spectrum-colorpicker'},
-		i18nextClient: {source: '**/*', target: 'build/deps/i18next-client', cwd: 'node_modules/i18next-client'},
-		openlayers: {source: '**/*', target: 'build/deps/openlayers', cwd: 'node_modules/openlayers'}
+		pointclouds: {source: '**/*', target: 'build/pointclouds', cwd: 'pointclouds'}
 	};
 	const mappings = {};
 	const minimatch = require('minimatch');
