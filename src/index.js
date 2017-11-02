@@ -15,7 +15,6 @@ Potree.webgl = {
 
 Potree.scriptPath = context.scriptPath;
 Potree.resourcePath = context.resourcePath;
-Potree.workerPool = context.workerPool;
 
 function legacyGL () {
 	return window.viewer.renderer.getContext();
