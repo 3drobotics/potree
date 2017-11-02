@@ -60,7 +60,7 @@
     "clean+build": "npm run gulp -- clean+build",
     "release": "npm run gulp -- release"
   },
-  "main": "./src/index.js",
+  "main": "./build/potree/potree.js",
   "browser": "./src/index.js",
   "dependencies": {
     "@tweenjs/tween.js": "^17.1.0",
