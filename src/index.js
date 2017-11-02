@@ -1,16 +1,42 @@
-// TODO: Legacy: All this is because all those properties used to be
-//       exported to Window. They should be accessed differently.
-module.exports = require('./Potree');
-// window.GLQueries = require('./webgl/GLQueries.js');
-// window.GreyhoundUtils = require('./loader/GreyhoundUtils');
-// window.LRUItem = require('./LRUItem');
-// window.LRU = require('./LRU');
-// window.PotreeRenderer = require('./viewer/PotreeRenderer');
-// window.EDLRenderer = require('./viewer/EDLRenderer');
-// window.initSidebar = require('./viewer/initSidebar');
-// window.HoverMenuItem = require('./stuff/HoverMenuItem');
-// window.HoverMenu = require('./stuff/HoverMenu');
-// THREE & proj4 used to be exposed, it still is
-// window.proj4 = require('proj4');
-// window.THREE = require('three');
-// require('three-ply-loader')(window.THREE);
+const GLQueries = require('./webgl/GLQueries');
+
+function Potree () {}
+
+const context = require('./context');
+Potree.version = context.version;
+
+console.log('Potree ' + context.version.major + '.' + context.version.minor + context.version.suffix);
+
+Potree.webgl = {
+	shaders: {},
+	vaos: {},
+	vbos: {}
+};
+
+Potree.scriptPath = context.scriptPath;
+Potree.resourcePath = context.resourcePath;
+Potree.workerPool = context.workerPool;
+
+function legacyGL () {
+	return window.viewer.renderer.getContext();
+};
+
+Potree.startQuery = function (name, gl) {
+	return GLQueries.forGL(gl || legacyGL()).start(name);
+};
+
+Potree.endQuery = function (query, gl) {
+	return GLQueries.forGL(gl || legacyGL()).end();
+};
+
+Potree.resolveQueries = function (gl) {
+	return GLQueries.forGL(gl || legacyGL()).resolve();
+};
+
+Potree.POCLoader = require('./loader/POCLoader');
+Potree.PointSizeType = require('./materials/PointSizeType');
+Potree.PointShape = require('./materials/PointShape');
+Potree.Viewer = require('./viewer/Viewer');
+Potree.loadPointCloud = require('./utils/loadPointCloud');
+
+module.exports = Potree;
