@@ -25,41 +25,41 @@ class NavigationCube extends THREE.Object3D {
 
 		let planeGeometry = new THREE.PlaneGeometry(1, 1);
 
-		this.front = new THREE.Mesh(planeGeometry, createPlaneMaterial('F.png'));
+		this.front = new THREE.Mesh(planeGeometry);
 		this.front.position.y = -0.5;
 		this.front.rotation.x = Math.PI / 2.0;
 		this.front.updateMatrixWorld();
 		this.front.name = 'F';
 		this.add(this.front);
 
-		this.back = new THREE.Mesh(planeGeometry, createPlaneMaterial('B.png'));
+		this.back = new THREE.Mesh(planeGeometry);
 		this.back.position.y = 0.5;
 		this.back.rotation.x = Math.PI / 2.0;
 		this.back.updateMatrixWorld();
 		this.back.name = 'B';
 		this.add(this.back);
 
-		this.left = new THREE.Mesh(planeGeometry, createPlaneMaterial('L.png'));
+		this.left = new THREE.Mesh(planeGeometry);
 		this.left.position.x = -0.5;
 		this.left.rotation.y = Math.PI / 2.0;
 		this.left.updateMatrixWorld();
 		this.left.name = 'L';
 		this.add(this.left);
 
-		this.right = new THREE.Mesh(planeGeometry, createPlaneMaterial('R.png'));
+		this.right = new THREE.Mesh(planeGeometry);
 		this.right.position.x = 0.5;
 		this.right.rotation.y = Math.PI / 2.0;
 		this.right.updateMatrixWorld();
 		this.right.name = 'R';
 		this.add(this.right);
 
-		this.bottom = new THREE.Mesh(planeGeometry, createPlaneMaterial('D.png'));
+		this.bottom = new THREE.Mesh(planeGeometry);
 		this.bottom.position.z = -0.5;
 		this.bottom.updateMatrixWorld();
 		this.bottom.name = 'D';
 		this.add(this.bottom);
 
-		this.top = new THREE.Mesh(planeGeometry, createPlaneMaterial('U.png'));
+		this.top = new THREE.Mesh(planeGeometry);
 		this.top.position.z = 0.5;
 		this.top.updateMatrixWorld();
 		this.top.name = 'U';

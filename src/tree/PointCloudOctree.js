@@ -461,10 +461,10 @@ class PointCloudOctree extends PointCloudTree {
 	 *
 	 *
 	 */
-	getProfile (start, end, width, depth, callback) {
-		let request = new ProfileRequest(start, end, width, depth, callback);
-		this.profileRequests.push(request);
-	};
+	// getProfile (start, end, width, depth, callback) {
+	// 	let request = new ProfileRequest(start, end, width, depth, callback);
+	// 	this.profileRequests.push(request);
+	// };
 
 	getVisibleExtent () {
 		return this.visibleBounds.applyMatrix4(this.matrixWorld);

@@ -223,33 +223,33 @@ class PotreeViewer extends THREE.EventDispatcher {
 			scene: scene
 		});
 
-		{ // Annotations
-			$('.annotation').detach();
-
-			// for(let annotation of this.scene.annotations){
-			//	this.renderArea.appendChild(annotation.domElement[0]);
-			// }
-
-			this.scene.annotations.traverse(annotation => {
-				this.renderArea.appendChild(annotation.domElement[0]);
-			});
-
-			if (!this.onAnnotationAdded) {
-				this.onAnnotationAdded = e => {
-				// console.log("annotation added: " + e.annotation.title);
-
-					e.annotation.traverse(node => {
-						this.renderArea.appendChild(node.domElement[0]);
-						node.scene = this.scene;
-					});
-				};
-			}
-
-			if (oldScene) {
-				oldScene.annotations.removeEventListener('annotation_added', this.onAnnotationAdded);
-			}
-			this.scene.annotations.addEventListener('annotation_added', this.onAnnotationAdded);
-		}
+		// { // Annotations
+		// 	$('.annotation').detach();
+		//
+		// 	// for(let annotation of this.scene.annotations){
+		// 	//	this.renderArea.appendChild(annotation.domElement[0]);
+		// 	// }
+		//
+		// 	this.scene.annotations.traverse(annotation => {
+		// 		this.renderArea.appendChild(annotation.domElement[0]);
+		// 	});
+		//
+		// 	if (!this.onAnnotationAdded) {
+		// 		this.onAnnotationAdded = e => {
+		// 		// console.log("annotation added: " + e.annotation.title);
+		//
+		// 			e.annotation.traverse(node => {
+		// 				this.renderArea.appendChild(node.domElement[0]);
+		// 				node.scene = this.scene;
+		// 			});
+		// 		};
+		// 	}
+		//
+		// 	if (oldScene) {
+		// 		oldScene.annotations.removeEventListener('annotation_added', this.onAnnotationAdded);
+		// 	}
+		// 	this.scene.annotations.addEventListener('annotation_added', this.onAnnotationAdded);
+		// }
 	};
 
 	getControls (navigationMode) {
@@ -423,21 +423,21 @@ class PotreeViewer extends THREE.EventDispatcher {
 	// 	return this.clippingTool.getClipMode();
 	// };
 
-	disableAnnotations () {
-		this.scene.annotations.traverse(annotation => {
-			annotation.domElement.css('pointer-events', 'none');
-
-			// return annotation.visible;
-		});
-	};
-
-	enableAnnotations () {
-		this.scene.annotations.traverse(annotation => {
-			annotation.domElement.css('pointer-events', 'auto');
-
-			// return annotation.visible;
-		});
-	};
+	// disableAnnotations () {
+	// 	this.scene.annotations.traverse(annotation => {
+	// 		annotation.domElement.css('pointer-events', 'none');
+	//
+	// 		// return annotation.visible;
+	// 	});
+	// };
+	//
+	// enableAnnotations () {
+	// 	this.scene.annotations.traverse(annotation => {
+	// 		annotation.domElement.css('pointer-events', 'auto');
+	//
+	// 		// return annotation.visible;
+	// 	});
+	// };
 
 	setClassificationVisibility (key, value) {
 		if (!this.classifications[key]) {
@@ -788,8 +788,8 @@ class PotreeViewer extends THREE.EventDispatcher {
 		{ // create FIRST PERSON CONTROLS
 			this.fpControls = new FirstPersonControls(this);
 			this.fpControls.enabled = false;
-			this.fpControls.addEventListener('start', this.disableAnnotations.bind(this));
-			this.fpControls.addEventListener('end', this.enableAnnotations.bind(this));
+			// this.fpControls.addEventListener('start', this.disableAnnotations.bind(this));
+			// this.fpControls.addEventListener('end', this.enableAnnotations.bind(this));
 			// this.fpControls.addEventListener("double_click_move", (event) => {
 			//	let distance = event.targetLocation.distanceTo(event.position);
 			//	this.setMoveSpeed(Math.pow(distance, 0.4));
@@ -812,15 +812,15 @@ class PotreeViewer extends THREE.EventDispatcher {
 		{ // create ORBIT CONTROLS
 			this.orbitControls = new OrbitControls(this);
 			this.orbitControls.enabled = false;
-			this.orbitControls.addEventListener('start', this.disableAnnotations.bind(this));
-			this.orbitControls.addEventListener('end', this.enableAnnotations.bind(this));
+			// this.orbitControls.addEventListener('start', this.disableAnnotations.bind(this));
+			// this.orbitControls.addEventListener('end', this.enableAnnotations.bind(this));
 		}
 
 		{ // create EARTH CONTROLS
 			this.earthControls = new EarthControls(this);
 			this.earthControls.enabled = false;
-			this.earthControls.addEventListener('start', this.disableAnnotations.bind(this));
-			this.earthControls.addEventListener('end', this.enableAnnotations.bind(this));
+			// this.earthControls.addEventListener('start', this.disableAnnotations.bind(this));
+			// this.earthControls.addEventListener('end', this.enableAnnotations.bind(this));
 		}
 	};
 
