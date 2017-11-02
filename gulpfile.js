@@ -17,6 +17,7 @@ const through = require('through');
 	const source = require('vinyl-source-stream');
 	const browserifyShader = require('browserify-shader');
 	const rename = require('gulp-rename');
+	const workerify = require('workerify');
 
 	const SCRIPTS = {
 		main: {source: 'src/index.js', target: 'build/potree/potree.js', args: {standalone: 'Potree'}},
@@ -36,7 +37,7 @@ const through = require('through');
 	function createArgs (script) {
 		return Object.assign({
 			entries: script.source,
-			transform: [browserifyShader],
+			transform: [browserifyShader, workerify],
 			cache: {},
 			debug: true
 		}, script.args || {})

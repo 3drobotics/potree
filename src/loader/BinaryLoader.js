@@ -56,8 +56,9 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 		node.numPoints = numPoints;
 	}
 
-	let workerPath = context.scriptPath + '/workers/BinaryDecoderWorker.js';
-	let worker = context.workerPool.getWorker(workerPath);
+	// let worker = context.workerPool.getWorker(workerPath);
+	let workerPath = '../../workers/BinaryDecoderWorker.js';
+	let worker = new Worker(workerPath);
 
 	worker.onmessage = function (e) {
 		let data = e.data;
@@ -67,7 +68,7 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
 
-		context.workerPool.returnWorker(workerPath, worker);
+		// context.workerPool.returnWorker(workerPath, worker);
 
 		let geometry = new THREE.BufferGeometry();
 

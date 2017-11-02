@@ -105,6 +105,7 @@
     "through": "~2.3.4",
     "uglifyify": "^4.0.4",
     "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.9.0"
+    "watchify": "^3.9.0",
+    "workerify": "^1.0.0"
   }
 }
