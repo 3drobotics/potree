@@ -21,8 +21,7 @@ const through = require('through');
 	const gulpif = require('gulp-if');
 
 	const SCRIPTS = {
-		main: {source: 'src/index.js', target: 'build/potree/potree.js', args: {standalone: 'Potree'}},
-		main2: {source: 'src/index.js', target: 'PotreeStandalone.js', args: { standalone: 'Potree', skipMap: true }}
+		main: {source: 'src/index.js', target: 'build/potree/potree.js', args: {standalone: 'Potree'}}
 	};
 
 	function createBrowserify (script, isMin) {
@@ -71,6 +70,8 @@ const through = require('through');
 				}
 			}))
 			.pipe(gulp.dest(path.dirname(script.target)))
+			.pipe(rename('PotreeStandalone.js'))
+			.pipe(gulp.dest(path.dirname('')))
 			.pipe(reload({stream: true}))
 			.pipe(through(file => {
 				gutil.log(`Finished writing ${file.path} & source-map`);
