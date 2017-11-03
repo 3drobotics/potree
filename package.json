@@ -60,7 +60,7 @@
     "clean+build": "npm run gulp -- clean+build",
     "release": "npm run gulp -- release"
   },
-  "main": "./build/potree/potree.js",
+  "main": "./PotreeStandalone.js",
   "browser": "./src/index.js",
   "dependencies": {
     "@tweenjs/tween.js": "^17.1.0",
@@ -95,6 +95,7 @@
     "gulp-buffer": "0.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-connect": "^5.0.0",
+    "gulp-if": "^2.0.2",
     "gulp-rename": "^1.2.2",
     "gulp-size": "^2.1.0",
     "gulp-util": "^3.0.8",

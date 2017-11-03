@@ -18,9 +18,11 @@ const through = require('through');
 	const browserifyShader = require('browserify-shader');
 	const rename = require('gulp-rename');
 	const workerify = require('workerify');
+	const gulpif = require('gulp-if');
 
 	const SCRIPTS = {
-		main: {source: 'src/index.js', target: 'build/potree/potree.js', args: {standalone: 'Potree'}}
+		main: {source: 'src/index.js', target: 'build/potree/potree.js', args: {standalone: 'Potree'}},
+		main2: {source: 'src/index.js', target: 'PotreeStandalone.js', args: { standalone: 'Potree', skipMap: true }}
 	};
 
 	function createBrowserify (script, isMin) {
@@ -57,7 +59,11 @@ const through = require('through');
 		const bMin = createBrowserify(script, true);
 		const bundle = (b, isMin) => b
 			.bundle()
-			.pipe(exorcist(createExorcistPath(script.target, isMin)))
+			.pipe(
+				gulpif(!script.args.skipMap,
+					exorcist(createExorcistPath(script.target, isMin))
+				)
+			)
 			.pipe(source(path.basename(script.target)))
 			.pipe(rename(path => {
 				if (isMin) {
