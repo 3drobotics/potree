@@ -34,7 +34,7 @@ const EarthControls = require('../navigation/EarthControls');
 // const initSidebar = require('./initSidebar');
 const Features = require('../Features');
 // const i18n = require('../i18n');
-const ProgressBar = require('./ProgressBar');
+// const ProgressBar = require('./ProgressBar');
 const Stats = require('stats.js');
 const updatePointClouds = require('../utils/updatePointClouds');
 const GLQueries = require('../webgl/GLQueries');
@@ -109,7 +109,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.showAnnotations = true;
 		this.freeze = false;
 
-		this.progressBar = new ProgressBar();
+		// this.progressBar = new ProgressBar();
 
 		this.stats = new Stats();
 		// this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
