@@ -46007,7 +46007,7 @@ Potree.loadPointCloud = require('./utils/loadPointCloud');
 
 module.exports = Potree;
 
-},{"./context":11,"./loader/POCLoader":14,"./materials/PointShape":25,"./materials/PointSizeType":26,"./utils/loadPointCloud":51,"./viewer/Viewer":65,"./webgl/GLQueries":66}],13:[function(require,module,exports){
+},{"./context":11,"./loader/POCLoader":14,"./materials/PointShape":25,"./materials/PointSizeType":26,"./utils/loadPointCloud":51,"./viewer/Viewer":64,"./webgl/GLQueries":65}],13:[function(require,module,exports){
 const Version = require('../Version');
 const PointAttributeNames = require('./PointAttributeNames');
 const THREE = require('three');
@@ -52528,88 +52528,6 @@ class PotreeRenderer {
 module.exports = PotreeRenderer;
 
 },{}],62:[function(require,module,exports){
-
-function ProgressBar () {
-	this._progress = 0;
-	this._message = '';
-
-	this.maxOpacity = 0.6;
-
-	this.element = document.createElement('div');
-	this.elProgress = document.createElement('div');
-	this.elProgressMessage = document.createElement('div');
-
-	// this.element.innerHTML = "element";
-	// this.elProgress.innerHTML = "progress";
-
-	this.element.innerHTML = '';
-	this.element.style.position = 'fixed';
-	this.element.style.bottom = '40px';
-	this.element.style.width = '200px';
-	this.element.style.marginLeft = '-100px';
-	this.element.style.left = '50%';
-	this.element.style.borderRadius = '5px';
-	this.element.style.border = '1px solid #727678';
-	this.element.style.height = '16px';
-	this.element.style.padding = '1px';
-	this.element.style.textAlign = 'center';
-	this.element.style.backgroundColor = '#6ba8e5';
-	this.element.style.opacity = this.maxOpacity;
-	this.element.style.pointerEvents = 'none';
-
-	this.elProgress.innerHTML = ' ';
-	this.elProgress.style.backgroundColor = '#b8e1fc';
-	this.elProgress.style.position = 'absolute';
-	this.elProgress.style.borderRadius = '5px';
-	this.elProgress.style.width = '0%';
-	this.elProgress.style.height = '100%';
-	this.elProgress.style.margin = '0px';
-	this.elProgress.style.padding = '0px';
-
-	this.elProgressMessage.style.position = 'absolute';
-	this.elProgressMessage.style.width = '100%';
-	this.elProgressMessage.innerHTML = 'loading 1 / 10';
-
-	document.body.appendChild(this.element);
-	this.element.appendChild(this.elProgress);
-	this.element.appendChild(this.elProgressMessage);
-
-	this.hide();
-};
-
-ProgressBar.prototype.hide = function () {
-	this.element.style.opacity = 0;
-	this.element.style.transition = 'all 0.2s ease';
-};
-
-ProgressBar.prototype.show = function () {
-	this.element.style.opacity = this.maxOpacity;
-	this.element.style.transition = 'all 0.2s ease';
-};
-
-Object.defineProperty(ProgressBar.prototype, 'progress', {
-	get: function () {
-		return this._progress;
-	},
-	set: function (value) {
-		this._progress = value;
-		this.elProgress.style.width = (value * 100) + '%';
-	}
-});
-
-Object.defineProperty(ProgressBar.prototype, 'message', {
-	get: function () {
-		return this._message;
-	},
-	set: function (message) {
-		this._message = message;
-		this.elProgressMessage.innerHTML = message;
-	}
-});
-
-module.exports = ProgressBar;
-
-},{}],63:[function(require,module,exports){
 const THREE = require('three');
 // const Annotation = require('../Annotation');
 const View = require('./View');
@@ -52933,7 +52851,7 @@ class Scene extends THREE.EventDispatcher {
 
 module.exports = Scene;
 
-},{"../utils/createBackgroundTexture":46,"../utils/createGrid":47,"./CameraMode":58,"./View":64,"three":4}],64:[function(require,module,exports){
+},{"../utils/createBackgroundTexture":46,"../utils/createGrid":47,"./CameraMode":58,"./View":63,"three":4}],63:[function(require,module,exports){
 const THREE = require('three');
 const OrbitControls = require('../navigation/OrbitControls');
 
@@ -53052,7 +52970,7 @@ class View {
 
 module.exports = View;
 
-},{"../navigation/OrbitControls":35,"three":4}],65:[function(require,module,exports){
+},{"../navigation/OrbitControls":35,"three":4}],64:[function(require,module,exports){
 
 // let getQueryParam = function(name) {
 //    name = name.replace(/[\[\]]/g, "\\$&");
@@ -53089,7 +53007,7 @@ const EarthControls = require('../navigation/EarthControls');
 // const initSidebar = require('./initSidebar');
 const Features = require('../Features');
 // const i18n = require('../i18n');
-const ProgressBar = require('./ProgressBar');
+// const ProgressBar = require('./ProgressBar');
 const Stats = require('stats.js');
 const updatePointClouds = require('../utils/updatePointClouds');
 const GLQueries = require('../webgl/GLQueries');
@@ -53164,7 +53082,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.showAnnotations = true;
 		this.freeze = false;
 
-		this.progressBar = new ProgressBar();
+		// this.progressBar = new ProgressBar();
 
 		this.stats = new Stats();
 		// this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
@@ -53255,7 +53173,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		}
 
 		// start rendering!
-		requestAnimationFrame(this.loop.bind(this));
+		this.animationFrameId = requestAnimationFrame(this.loop.bind(this));
 
 		// this.loadGUI = this.loadGUI.bind(this);
 	}
@@ -54290,8 +54208,13 @@ class PotreeViewer extends THREE.EventDispatcher {
 			'timestamp': timestamp});
 	}
 
+	destroy () {
+		// window.cancelAnimationFrame(this.animationFrameId);
+		window.cancelAnimationFrame(this.animationFrameId2);
+	}
+
 	loop (timestamp) {
-		requestAnimationFrame(this.loop.bind(this));
+		this.animationFrameId2 = requestAnimationFrame(this.loop.bind(this));
 
 		this.stats.begin();
 
@@ -54356,7 +54279,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 module.exports = PotreeViewer;
 
-},{"../Features":5,"../context":11,"../navigation/EarthControls":32,"../navigation/FirstPersonControls":33,"../navigation/InputHandler":34,"../navigation/OrbitControls":35,"../utils/computeTransformedBoundingBox":45,"../utils/getParameterByName":50,"../utils/updatePointClouds":54,"../utils/zoomTo":57,"../webgl/GLQueries":66,"./CameraMode":58,"./EDLRenderer":59,"./NavigationCube":60,"./PotreeRenderer":61,"./ProgressBar":62,"./Scene":63,"@tweenjs/tween.js":1,"stats.js":3,"three":4}],66:[function(require,module,exports){
+},{"../Features":5,"../context":11,"../navigation/EarthControls":32,"../navigation/FirstPersonControls":33,"../navigation/InputHandler":34,"../navigation/OrbitControls":35,"../utils/computeTransformedBoundingBox":45,"../utils/getParameterByName":50,"../utils/updatePointClouds":54,"../utils/zoomTo":57,"../webgl/GLQueries":65,"./CameraMode":58,"./EDLRenderer":59,"./NavigationCube":60,"./PotreeRenderer":61,"./Scene":62,"@tweenjs/tween.js":1,"stats.js":3,"three":4}],65:[function(require,module,exports){
 const queriesPerGL = new Map();
 let cached = false;
 

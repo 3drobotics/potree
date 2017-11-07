@@ -1235,8 +1235,12 @@ class PotreeViewer extends THREE.EventDispatcher {
 			'timestamp': timestamp});
 	}
 
+	destroy () {
+		window.cancelAnimationFrame(this.animationFrameId);
+	}
+
 	loop (timestamp) {
-		requestAnimationFrame(this.loop.bind(this));
+		this.animationFrameId = requestAnimationFrame(this.loop.bind(this));
 
 		this.stats.begin();
 
