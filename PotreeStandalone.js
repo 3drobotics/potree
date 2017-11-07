@@ -45350,74 +45350,6 @@ b.fillRect(d,m,n,p);b.fillStyle=l;b.globalAlpha=.9;b.fillRect(d,m,n,p);return{do
 })));
 
 },{}],5:[function(require,module,exports){
-
-module.exports = (function () {
-	var ftCanvas = document.createElement('canvas');
-	var gl = ftCanvas.getContext('webgl') || ftCanvas.getContext('experimental-webgl');
-	if (gl === null)		{ return null; }
-
-	// -- code taken from THREE.WebGLRenderer --
-	var _vertexShaderPrecisionHighpFloat = gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT);
-	var _vertexShaderPrecisionMediumpFloat = gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT);
-	// Unused: var _vertexShaderPrecisionLowpFloat = gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT);
-
-	var _fragmentShaderPrecisionHighpFloat = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
-	var _fragmentShaderPrecisionMediumpFloat = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT);
-	// Unused: var _fragmentShaderPrecisionLowpFloat = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT);
-
-	var highpAvailable = _vertexShaderPrecisionHighpFloat.precision > 0 && _fragmentShaderPrecisionHighpFloat.precision > 0;
-	var mediumpAvailable = _vertexShaderPrecisionMediumpFloat.precision > 0 && _fragmentShaderPrecisionMediumpFloat.precision > 0;
-	// -----------------------------------------
-
-	var precision;
-	if (highpAvailable) {
-		precision = 'highp';
-	} else if (mediumpAvailable) {
-		precision = 'mediump';
-	} else {
-		precision = 'lowp';
-	}
-
-	return {
-		SHADER_INTERPOLATION: {
-			isSupported: function () {
-				var supported = true;
-
-				supported = supported && gl.getExtension('EXT_frag_depth');
-				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
-
-				return supported;
-			}
-		},
-		SHADER_SPLATS: {
-			isSupported: function () {
-				var supported = true;
-
-				supported = supported && gl.getExtension('EXT_frag_depth');
-				supported = supported && gl.getExtension('OES_texture_float');
-				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
-
-				return supported;
-			}
-
-		},
-		SHADER_EDL: {
-			isSupported: function () {
-				var supported = true;
-
-				supported = supported && gl.getExtension('EXT_frag_depth');
-				supported = supported && gl.getExtension('OES_texture_float');
-				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
-
-				return supported;
-			}
-
-		},
-		precision: precision
-	};
-}());
-
-},{}],6:[function(require,module,exports){
 const LRUItem = require('./LRUItem');
 const context = require('./context');
 
@@ -45617,7 +45549,7 @@ LRU.prototype.disposeDescendants = function (node) {
 
 module.exports = LRU;
 
-},{"./LRUItem":7,"./context":11}],7:[function(require,module,exports){
+},{"./LRUItem":6,"./context":10}],6:[function(require,module,exports){
 /**
  *
  * @param node
@@ -45631,7 +45563,7 @@ function LRUItem (node) {
 
 module.exports = LRUItem;
 
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 
 module.exports = function () {
 	this.url = null;
@@ -45646,7 +45578,7 @@ module.exports = function () {
 	this.loader = null;
 };
 
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 const PointCloudTreeNode = require('./tree/PointCloudTreeNode');
 const THREE = require('three');
 const POCLoader = require('./loader/POCLoader');
@@ -45888,7 +45820,7 @@ Object.assign(PointCloudOctreeGeometryNode.prototype, THREE.EventDispatcher.prot
 
 module.exports = PointCloudOctreeGeometryNode;
 
-},{"./loader/POCLoader":14,"./tree/PointCloudTreeNode":41,"three":4}],10:[function(require,module,exports){
+},{"./loader/POCLoader":13,"./tree/PointCloudTreeNode":40,"three":4}],9:[function(require,module,exports){
 
 const Version = function (version) {
 	this.version = version;
@@ -45930,7 +45862,7 @@ Version.prototype.upTo = function (version) {
 
 module.exports = Version;
 
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 const LRU = require('./LRU');
 
 let scriptPath = null;
@@ -45964,7 +45896,7 @@ module.exports = {
 	}
 };
 
-},{"./LRU":6}],12:[function(require,module,exports){
+},{"./LRU":5}],11:[function(require,module,exports){
 const GLQueries = require('./webgl/GLQueries');
 
 function Potree () {}
@@ -46007,7 +45939,7 @@ Potree.loadPointCloud = require('./utils/loadPointCloud');
 
 module.exports = Potree;
 
-},{"./context":11,"./loader/POCLoader":14,"./materials/PointShape":25,"./materials/PointSizeType":26,"./utils/loadPointCloud":51,"./viewer/Viewer":64,"./webgl/GLQueries":65}],13:[function(require,module,exports){
+},{"./context":10,"./loader/POCLoader":13,"./materials/PointShape":24,"./materials/PointSizeType":25,"./utils/loadPointCloud":50,"./viewer/Viewer":62,"./webgl/GLQueries":63}],12:[function(require,module,exports){
 const Version = require('../Version');
 const PointAttributeNames = require('./PointAttributeNames');
 const THREE = require('three');
@@ -46136,7 +46068,7 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 
 module.exports = BinaryLoader;
 
-},{"../Version":10,"../context":11,"./PointAttributeNames":16,"three":4}],14:[function(require,module,exports){
+},{"../Version":9,"../context":10,"./PointAttributeNames":15,"three":4}],13:[function(require,module,exports){
 const PointCloudOctreeGeometry = require('../PointCloudOctreeGeometry');
 const PointCloudOctreeGeometryNode = require('../PointCloudOctreeGeometryNode');
 const Version = require('../Version');
@@ -46313,7 +46245,7 @@ POCLoader.createChildAABB = function (aabb, index) {
 	return new THREE.Box3(min, max);
 };
 
-},{"../PointCloudOctreeGeometry":8,"../PointCloudOctreeGeometryNode":9,"../Version":10,"./BinaryLoader":13,"./PointAttribute":15,"./PointAttributes":18,"three":4}],15:[function(require,module,exports){
+},{"../PointCloudOctreeGeometry":7,"../PointCloudOctreeGeometryNode":8,"../Version":9,"./BinaryLoader":12,"./PointAttribute":14,"./PointAttributes":17,"three":4}],14:[function(require,module,exports){
 const PointAttributeNames = require('./PointAttributeNames');
 const PointAttributeTypes = require('./PointAttributeTypes');
 
@@ -46377,7 +46309,7 @@ PointAttribute.NORMAL = new PointAttribute(
 
 module.exports = PointAttribute;
 
-},{"./PointAttributeNames":16,"./PointAttributeTypes":17}],16:[function(require,module,exports){
+},{"./PointAttributeNames":15,"./PointAttributeTypes":16}],15:[function(require,module,exports){
 const PointAttributeNames = {};
 
 PointAttributeNames.POSITION_CARTESIAN = 0; // float x, y, z;
@@ -46394,7 +46326,7 @@ PointAttributeNames.NORMAL = 10;
 
 module.exports = PointAttributeNames;
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 /**
  * Some types of possible point attribute data formats
  *
@@ -46421,7 +46353,7 @@ for (var obj in PointAttributeTypes) {
 
 module.exports = PointAttributeTypes;
 
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 const PointAttribute = require('./PointAttribute');
 const PointAttributeNames = require('./PointAttributeNames');
 
@@ -46481,7 +46413,7 @@ PointAttributes.prototype.hasNormals = function () {
 
 module.exports = PointAttributes;
 
-},{"./PointAttribute":15,"./PointAttributeNames":16}],19:[function(require,module,exports){
+},{"./PointAttribute":14,"./PointAttributeNames":15}],18:[function(require,module,exports){
 const THREE = require('three');
 module.exports = {
 	'DEFAULT': {
@@ -46500,7 +46432,7 @@ module.exports = {
 	}
 };
 
-},{"three":4}],20:[function(require,module,exports){
+},{"three":4}],19:[function(require,module,exports){
 const ClipMode = {
 	DISABLED: 0,
 	HIGHLIGHT: 1,
@@ -46519,7 +46451,7 @@ Object.defineProperty(ClipMode, 'forCode', {
 });
 module.exports = ClipMode;
 
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 const PointColorType = require('./PointColorType');
 const THREE = require('three');
 const vs = require('./shaders/edl.vs');
@@ -46618,7 +46550,7 @@ Object.defineProperty(EyeDomeLightingMaterial.prototype, 'neighbourCount', {
 
 module.exports = EyeDomeLightingMaterial;
 
-},{"./PointColorType":24,"./shaders/edl.fs":28,"./shaders/edl.vs":29,"three":4}],22:[function(require,module,exports){
+},{"./PointColorType":23,"./shaders/edl.fs":27,"./shaders/edl.vs":28,"three":4}],21:[function(require,module,exports){
 const THREE = require('three');
 module.exports = {
 	RAINBOW: [
@@ -46702,7 +46634,7 @@ module.exports = {
 	]
 };
 
-},{"three":4}],23:[function(require,module,exports){
+},{"three":4}],22:[function(require,module,exports){
 const THREE = require('three');
 const vs = require('./shaders/pointcloud.vs');
 const fs = require('./shaders/pointcloud.fs');
@@ -47628,7 +47560,7 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 };
 
-},{"../utils/generateDataTexture":48,"./Classification":19,"./Gradients":22,"./PointColorType":24,"./PointShape":25,"./PointSizeType":26,"./TreeType":27,"./shaders/pointcloud.fs":30,"./shaders/pointcloud.vs":31,"three":4}],24:[function(require,module,exports){
+},{"../utils/generateDataTexture":47,"./Classification":18,"./Gradients":21,"./PointColorType":23,"./PointShape":24,"./PointSizeType":25,"./TreeType":26,"./shaders/pointcloud.fs":29,"./shaders/pointcloud.vs":30,"three":4}],23:[function(require,module,exports){
 module.exports = {
 	RGB: 0,
 	COLOR: 1,
@@ -47649,27 +47581,27 @@ module.exports = {
 	COMPOSITE: 50
 };
 
-},{}],25:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 module.exports = {
 	SQUARE: 0,
 	CIRCLE: 1,
 	PARABOLOID: 2
 };
 
-},{}],26:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports = {
 	FIXED: 0,
 	ATTENUATED: 1,
 	ADAPTIVE: 2
 };
 
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = {
 	OCTREE:	0,
 	KDTREE:	1
 };
 
-},{}],28:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = function parse(params){
       var template = "#define NEIGHBOUR_COUNT {{neighbourCount}} \n" +
 "// \n" +
@@ -47733,7 +47665,7 @@ module.exports = function parse(params){
       return template
     };
 
-},{}],29:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = function parse(params){
       var template = "#define NEIGHBOUR_COUNT {{neighbourCount}} \n" +
 " \n" +
@@ -47755,7 +47687,7 @@ module.exports = function parse(params){
       return template
     };
 
-},{}],30:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 module.exports = function parse(params){
       var template = "{{defines}} \n" +
 "precision mediump float; \n" +
@@ -48036,7 +47968,7 @@ module.exports = function parse(params){
       return template
     };
 
-},{}],31:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 module.exports = function parse(params){
       var template = "{{defines}} \n" +
 "precision mediump float; \n" +
@@ -48586,7 +48518,7 @@ module.exports = function parse(params){
       return template
     };
 
-},{}],32:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 const THREE = require('three');
 const TWEEN = require('@tweenjs/tween.js');
 const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
@@ -48886,7 +48818,7 @@ class EarthControls extends THREE.EventDispatcher {
 
 module.exports = EarthControls;
 
-},{"../utils/Mouse":44,"../utils/getMousePointCloudIntersection":49,"../utils/projectedRadius":52,"@tweenjs/tween.js":1,"three":4}],33:[function(require,module,exports){
+},{"../utils/Mouse":43,"../utils/getMousePointCloudIntersection":48,"../utils/projectedRadius":51,"@tweenjs/tween.js":1,"three":4}],32:[function(require,module,exports){
 const THREE = require('three');
 const TWEEN = require('@tweenjs/tween.js');
 const MOUSE = require('../utils/Mouse');
@@ -49158,7 +49090,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
 
 module.exports = FirstPersonControls;
 
-},{"../utils/Mouse":44,"../utils/getMousePointCloudIntersection":49,"@tweenjs/tween.js":1,"three":4}],34:[function(require,module,exports){
+},{"../utils/Mouse":43,"../utils/getMousePointCloudIntersection":48,"@tweenjs/tween.js":1,"three":4}],33:[function(require,module,exports){
 const THREE = require('three');
 const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
 
@@ -49796,7 +49728,7 @@ class InputHandler extends THREE.EventDispatcher {
 
 module.exports = InputHandler;
 
-},{"../utils/getMousePointCloudIntersection":49,"three":4}],35:[function(require,module,exports){
+},{"../utils/getMousePointCloudIntersection":48,"three":4}],34:[function(require,module,exports){
 const THREE = require('three');
 const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
 const MOUSE = require('../utils/Mouse');
@@ -50068,7 +50000,7 @@ class OrbitControls extends THREE.EventDispatcher {
 
 module.exports = OrbitControls;
 
-},{"../utils/Mouse":44,"../utils/getMousePointCloudIntersection":49,"@tweenjs/tween.js":1,"three":4}],36:[function(require,module,exports){
+},{"../utils/Mouse":43,"../utils/getMousePointCloudIntersection":48,"@tweenjs/tween.js":1,"three":4}],35:[function(require,module,exports){
 const DEMNode = require('./DEMNode');
 const context = require('../context');
 
@@ -50295,7 +50227,7 @@ module.exports = class DEM {
 	}
 };
 
-},{"../context":11,"./DEMNode":37}],37:[function(require,module,exports){
+},{"../context":10,"./DEMNode":36}],36:[function(require,module,exports){
 //
 // index is in order xyzxyzxyz
 //
@@ -50433,7 +50365,7 @@ module.exports = class DEMNode {
 	}
 };
 
-},{}],38:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 const THREE = require('three');
 const PointCloudTree = require('./PointCloudTree');
 const PointCloudMaterial = require('../materials/PointCloudMaterial');
@@ -51208,7 +51140,7 @@ class PointCloudOctree extends PointCloudTree {
 
 module.exports = PointCloudOctree;
 
-},{"../PointCloudOctreeGeometryNode":9,"../materials/PointCloudMaterial":23,"../materials/PointColorType":24,"../materials/PointSizeType":26,"../utils/computeTransformedBoundingBox":45,"./PointCloudOctreeNode":39,"./PointCloudTree":40,"three":4}],39:[function(require,module,exports){
+},{"../PointCloudOctreeGeometryNode":8,"../materials/PointCloudMaterial":22,"../materials/PointColorType":23,"../materials/PointSizeType":25,"../utils/computeTransformedBoundingBox":44,"./PointCloudOctreeNode":38,"./PointCloudTree":39,"three":4}],38:[function(require,module,exports){
 const PointCloudTreeNode = require('./PointCloudTreeNode');
 
 class PointCloudOctreeNode extends PointCloudTreeNode {
@@ -51268,7 +51200,7 @@ class PointCloudOctreeNode extends PointCloudTreeNode {
 PointCloudOctreeNode.prototype = Object.create(PointCloudTreeNode.prototype);
 module.exports = PointCloudOctreeNode;
 
-},{"./PointCloudTreeNode":41}],40:[function(require,module,exports){
+},{"./PointCloudTreeNode":40}],39:[function(require,module,exports){
 const DEM = require('./DEM');
 const THREE = require('three');
 
@@ -51284,7 +51216,7 @@ module.exports = class PointCloudTree extends THREE.Object3D {
 	}
 };
 
-},{"./DEM":36,"three":4}],41:[function(require,module,exports){
+},{"./DEM":35,"three":4}],40:[function(require,module,exports){
 module.exports = class {
 	getChildren () {
 		throw new Error('override function');
@@ -51315,7 +51247,7 @@ module.exports = class {
 	}
 };
 
-},{}],42:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 /*
 ** Binary Heap implementation in Javascript
 ** From: http://eloquentjavascript.net/1st_edition/appendix2.htmlt
@@ -51440,7 +51372,7 @@ BinaryHeap.prototype = {
 
 module.exports = BinaryHeap;
 
-},{}],43:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 const THREE = require('three');
 
 /**
@@ -51481,14 +51413,14 @@ class Box3Helper extends THREE.LineSegments {
 
 module.exports = Box3Helper;
 
-},{"three":4}],44:[function(require,module,exports){
+},{"three":4}],43:[function(require,module,exports){
 module.exports = {
 	LEFT: 0b0001,
 	RIGHT: 0b0010,
 	MIDDLE: 0b0100
 };
 
-},{}],45:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 const THREE = require('three');
 
 /**
@@ -51513,7 +51445,7 @@ module.exports = (box, transform) => {
 	return boundingBox;
 };
 
-},{"three":4}],46:[function(require,module,exports){
+},{"three":4}],45:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = (width, height) => {
@@ -51553,7 +51485,7 @@ module.exports = (width, height) => {
 	return texture;
 };
 
-},{"three":4}],47:[function(require,module,exports){
+},{"three":4}],46:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = (width, length, spacing, color) => {
@@ -51577,7 +51509,7 @@ module.exports = (width, length, spacing, color) => {
 	return line;
 };
 
-},{"three":4}],48:[function(require,module,exports){
+},{"three":4}],47:[function(require,module,exports){
 const THREE = require('three');
 
 // code taken from three.js
@@ -51603,7 +51535,7 @@ module.exports = (width, height, color) => {
 	return texture;
 };
 
-},{"three":4}],49:[function(require,module,exports){
+},{"three":4}],48:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = (mouse, camera, renderer, pointclouds) => {
@@ -51656,7 +51588,7 @@ module.exports = (mouse, camera, renderer, pointclouds) => {
 	}
 };
 
-},{"three":4}],50:[function(require,module,exports){
+},{"three":4}],49:[function(require,module,exports){
 // from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
 module.exports = (name) => {
 	name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
@@ -51665,7 +51597,7 @@ module.exports = (name) => {
 	return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, ' '));
 };
 
-},{}],51:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 /* eslint-disable standard/no-callback-literal */
 const PointCloudOctree = require('../tree/PointCloudOctree');
 // const PointCloudArena4D = require('../arena4d/PointCloudArena4D');
@@ -51716,7 +51648,7 @@ module.exports = function (path, name, callback) {
 	}
 };
 
-},{"../loader/POCLoader":14,"../tree/PointCloudOctree":38}],52:[function(require,module,exports){
+},{"../loader/POCLoader":13,"../tree/PointCloudOctree":37}],51:[function(require,module,exports){
 module.exports = (radius, fov, distance, screenHeight) => {
 	let projFactor = (1 / Math.tan(fov / 2)) / distance;
 	projFactor = projFactor * screenHeight / 2;
@@ -51724,7 +51656,7 @@ module.exports = (radius, fov, distance, screenHeight) => {
 	return radius * projFactor;
 };
 
-},{}],53:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = new function () {
@@ -51747,7 +51679,7 @@ module.exports = new function () {
 	};
 }();
 
-},{"three":4}],54:[function(require,module,exports){
+},{"three":4}],53:[function(require,module,exports){
 const updateVisibility = require('./updateVisibility');
 const context = require('../context');
 
@@ -51772,7 +51704,7 @@ module.exports = function (pointclouds, camera, renderer) {
 	return result;
 };
 
-},{"../context":11,"./updateVisibility":55}],55:[function(require,module,exports){
+},{"../context":10,"./updateVisibility":54}],54:[function(require,module,exports){
 const updateVisibilityStructures = require('./updateVisibilityStructures');
 const THREE = require('three');
 const context = require('../context');
@@ -51970,7 +51902,7 @@ module.exports = function (pointclouds, camera, renderer) {
 	};
 };
 
-},{"../context":11,"../materials/ClipMode":20,"../tree/DEM":36,"../utils/Box3Helper":43,"./updateVisibilityStructures":56,"three":4}],56:[function(require,module,exports){
+},{"../context":10,"../materials/ClipMode":19,"../tree/DEM":35,"../utils/Box3Helper":42,"./updateVisibilityStructures":55,"three":4}],55:[function(require,module,exports){
 const BinaryHeap = require('./BinaryHeap');
 const THREE = require('three');
 
@@ -52033,7 +51965,7 @@ module.exports = function updateVisibilityStructures (pointclouds, camera, rende
 	};
 };
 
-},{"./BinaryHeap":42,"three":4}],57:[function(require,module,exports){
+},{"./BinaryHeap":41,"three":4}],56:[function(require,module,exports){
 
 module.exports = function (camera, node, factor) {
 	if (!node.geometry && !node.boundingSphere && !node.boundingBox) {
@@ -52121,13 +52053,13 @@ module.exports = function (camera, node, factor) {
 //
 // }
 
-},{}],58:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 module.exports = {
 	ORTHOGRAPHIC: 0,
 	PERSPECTIVE: 1
 };
 
-},{}],59:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 const EyeDomeLightingMaterial = require('../materials/EyeDomeLightingMaterial');
 const THREE = require('three');
 const screenPass = require('../utils/screenPass');
@@ -52306,7 +52238,7 @@ class EDLRenderer {
 
 module.exports = EDLRenderer;
 
-},{"../materials/EyeDomeLightingMaterial":21,"../utils/screenPass":53,"three":4}],60:[function(require,module,exports){
+},{"../materials/EyeDomeLightingMaterial":20,"../utils/screenPass":52,"three":4}],59:[function(require,module,exports){
 const THREE = require('three');
 const context = require('../context');
 
@@ -52422,112 +52354,7 @@ class NavigationCube extends THREE.Object3D {
 
 module.exports = NavigationCube;
 
-},{"../context":11,"three":4}],61:[function(require,module,exports){
-class PotreeRenderer {
-	constructor (viewer) {
-		this.viewer = viewer;
-	};
-
-	render () {
-		const viewer = this.viewer;
-		{ // resize
-			let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
-			let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
-			let aspect = width / height;
-
-			viewer.scene.cameraP.aspect = aspect;
-			viewer.scene.cameraP.updateProjectionMatrix();
-
-			let frustumScale = viewer.moveSpeed * 2.0;
-			viewer.scene.cameraO.left = -frustumScale;
-			viewer.scene.cameraO.right = frustumScale;
-			viewer.scene.cameraO.top = frustumScale * 1 / aspect;
-			viewer.scene.cameraO.bottom = -frustumScale * 1 / aspect;
-			viewer.scene.cameraO.updateProjectionMatrix();
-
-			viewer.scene.cameraScreenSpace.top = 1 / aspect;
-			viewer.scene.cameraScreenSpace.bottom = -1 / aspect;
-			viewer.scene.cameraScreenSpace.updateProjectionMatrix();
-
-			// update frustum size for adaptive point size with ortho cameras
-			for (let pointcloud of viewer.scene.pointclouds) {
-				pointcloud.material.orthoRange = 2.0 * frustumScale;
-			}
-
-			viewer.renderer.setSize(width, height);
-		}
-
-		// render skybox
-		if (viewer.background === 'skybox') {
-			let skybox = viewer.getSkybox();
-
-			viewer.renderer.clear(true, true, false);
-			skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
-			skybox.camera.fov = viewer.scene.cameraP.fov;
-			skybox.camera.aspect = viewer.scene.cameraP.aspect;
-			skybox.camera.updateProjectionMatrix();
-
-			viewer.renderer.render(skybox.scene, skybox.camera);
-		} else if (viewer.background === 'gradient') {
-			// viewer.renderer.clear(true, true, false);
-			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
-		} else if (viewer.background === 'black') {
-			viewer.renderer.setClearColor(0x000000, 1);
-			viewer.renderer.clear(true, true, false);
-		} else if (viewer.background === 'white') {
-			viewer.renderer.setClearColor(0xFFFFFF, 1);
-			viewer.renderer.clear(true, true, false);
-		}
-
-		for (let pointcloud of this.viewer.scene.pointclouds) {
-			pointcloud.material.useEDL = false;
-		}
-
-		// var queryPC = Potree.startQuery("PointCloud", viewer.renderer.getContext());
-		let activeCam = viewer.scene.getActiveCamera();
-		viewer.renderer.render(viewer.scene.scenePointCloud, activeCam);
-		// Potree.endQuery(queryPC, viewer.renderer.getContext());
-
-		// render scene
-		viewer.renderer.render(viewer.scene.scene, activeCam);
-
-		viewer.volumeTool.update();
-		viewer.renderer.render(viewer.volumeTool.sceneVolume, activeCam);
-
-		viewer.clippingTool.update();
-		viewer.renderer.render(viewer.clippingTool.sceneMarker, viewer.scene.cameraScreenSpace); // viewer.scene.cameraScreenSpace);
-		viewer.renderer.render(viewer.clippingTool.sceneVolume, activeCam);
-
-		viewer.renderer.render(viewer.controls.sceneControls, activeCam);
-
-		viewer.renderer.clearDepth();
-
-		viewer.measuringTool.update();
-		viewer.profileTool.update();
-		viewer.transformationTool.update();
-
-		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, activeCam);
-		viewer.renderer.render(viewer.profileTool.sceneProfile, activeCam);
-		viewer.renderer.render(viewer.transformationTool.sceneTransform, activeCam);
-
-		viewer.renderer.setViewport(
-			viewer.renderer.domElement.clientWidth - viewer.navigationCube.width,
-			viewer.renderer.domElement.clientHeight - viewer.navigationCube.width,
-			viewer.navigationCube.width,
-			viewer.navigationCube.width
-		);
-		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);
-		viewer.renderer.setViewport(0, 0, viewer.renderer.domElement.clientWidth, viewer.renderer.domElement.clientHeight);
-
-		// Potree.endQuery(queryAll, viewer.renderer.getContext());
-
-		// Potree.resolveQueries(viewer.renderer.getContext());
-	};
-};
-
-module.exports = PotreeRenderer;
-
-},{}],62:[function(require,module,exports){
+},{"../context":10,"three":4}],60:[function(require,module,exports){
 const THREE = require('three');
 // const Annotation = require('../Annotation');
 const View = require('./View');
@@ -52851,7 +52678,7 @@ class Scene extends THREE.EventDispatcher {
 
 module.exports = Scene;
 
-},{"../utils/createBackgroundTexture":46,"../utils/createGrid":47,"./CameraMode":58,"./View":63,"three":4}],63:[function(require,module,exports){
+},{"../utils/createBackgroundTexture":45,"../utils/createGrid":46,"./CameraMode":57,"./View":61,"three":4}],61:[function(require,module,exports){
 const THREE = require('three');
 const OrbitControls = require('../navigation/OrbitControls');
 
@@ -52970,7 +52797,7 @@ class View {
 
 module.exports = View;
 
-},{"../navigation/OrbitControls":35,"three":4}],64:[function(require,module,exports){
+},{"../navigation/OrbitControls":34,"three":4}],62:[function(require,module,exports){
 
 // let getQueryParam = function(name) {
 //    name = name.replace(/[\[\]]/g, "\\$&");
@@ -53005,7 +52832,7 @@ const CameraMode = require('./CameraMode');
 const OrbitControls = require('../navigation/OrbitControls');
 const EarthControls = require('../navigation/EarthControls');
 // const initSidebar = require('./initSidebar');
-const Features = require('../Features');
+// const Features = require('../Features');
 // const i18n = require('../i18n');
 // const ProgressBar = require('./ProgressBar');
 const Stats = require('stats.js');
@@ -53089,7 +52916,6 @@ class PotreeViewer extends THREE.EventDispatcher {
 		// document.body.appendChild( this.stats.dom );
 		// this.stats.dom.style.left = "100px";
 
-		this.potreeRenderer = null;
 		this.edlRenderer = null;
 		this.renderer = null;
 
@@ -53173,7 +52999,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		}
 
 		// start rendering!
-		this.animationFrameId = requestAnimationFrame(this.loop.bind(this));
+		requestAnimationFrame(this.loop.bind(this));
 
 		// this.loadGUI = this.loadGUI.bind(this);
 	}
@@ -54209,12 +54035,11 @@ class PotreeViewer extends THREE.EventDispatcher {
 	}
 
 	destroy () {
-		// window.cancelAnimationFrame(this.animationFrameId);
-		window.cancelAnimationFrame(this.animationFrameId2);
+		window.cancelAnimationFrame(this.animationFrameId);
 	}
 
 	loop (timestamp) {
-		this.animationFrameId2 = requestAnimationFrame(this.loop.bind(this));
+		this.animationFrameId = requestAnimationFrame(this.loop.bind(this));
 
 		this.stats.begin();
 
@@ -54231,27 +54056,11 @@ class PotreeViewer extends THREE.EventDispatcher {
 		const queries = GLQueries.forGL(this.renderer.getContext());
 		queries.start('frame');
 
-		// if (this.useSnapshot) {
-			// if (!this.snapshotRenderer) {
-			// 	const SnapshotRenderer = require('./SnapshotRenderer');
-			// 	this.snapshotRenderer = new SnapshotRenderer(this);
-			// }
-			//
-			// this.snapshotRenderer.render(this.renderer);
-		// } else
-		if (this.useEDL && Features.SHADER_EDL.isSupported()) {
-			if (!this.edlRenderer) {
-				const EDLRenderer = require('./EDLRenderer');
-				this.edlRenderer = new EDLRenderer(this);
-			}
-			this.edlRenderer.render(this.renderer);
-		} else {
-			if (!this.potreeRenderer) {
-				const PotreeRenderer = require('./PotreeRenderer');
-				this.potreeRenderer = new PotreeRenderer(this);
-			}
-			this.potreeRenderer.render();
+		if (!this.edlRenderer) {
+			const EDLRenderer = require('./EDLRenderer');
+			this.edlRenderer = new EDLRenderer(this);
 		}
+		this.edlRenderer.render(this.renderer);
 
 		if (queries.enabled) {
 			queries.end();
@@ -54279,7 +54088,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 module.exports = PotreeViewer;
 
-},{"../Features":5,"../context":11,"../navigation/EarthControls":32,"../navigation/FirstPersonControls":33,"../navigation/InputHandler":34,"../navigation/OrbitControls":35,"../utils/computeTransformedBoundingBox":45,"../utils/getParameterByName":50,"../utils/updatePointClouds":54,"../utils/zoomTo":57,"../webgl/GLQueries":65,"./CameraMode":58,"./EDLRenderer":59,"./NavigationCube":60,"./PotreeRenderer":61,"./Scene":62,"@tweenjs/tween.js":1,"stats.js":3,"three":4}],65:[function(require,module,exports){
+},{"../context":10,"../navigation/EarthControls":31,"../navigation/FirstPersonControls":32,"../navigation/InputHandler":33,"../navigation/OrbitControls":34,"../utils/computeTransformedBoundingBox":44,"../utils/getParameterByName":49,"../utils/updatePointClouds":53,"../utils/zoomTo":56,"../webgl/GLQueries":63,"./CameraMode":57,"./EDLRenderer":58,"./NavigationCube":59,"./Scene":60,"@tweenjs/tween.js":1,"stats.js":3,"three":4}],63:[function(require,module,exports){
 const queriesPerGL = new Map();
 let cached = false;
 
@@ -54367,6 +54176,6 @@ class GLQueries {
 
 module.exports = GLQueries;
 
-},{}]},{},[12])(12)
+},{}]},{},[11])(11)
 });
 //# sourceMappingURL=potree.js.map
