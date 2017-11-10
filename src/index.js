@@ -6,6 +6,7 @@ const context = require('./context');
 Potree.version = context.version;
 
 console.log('Potree ' + context.version.major + '.' + context.version.minor + context.version.suffix);
+console.log('UPDATED VERSION');
 
 Potree.webgl = {
 	shaders: {},
