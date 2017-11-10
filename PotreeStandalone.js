@@ -45886,7 +45886,7 @@ module.exports = {
 		suffix: 'RC'
 	},
 	framenumber: 0,
-	pointBudget: 1 * 1000 * 5000,
+	pointBudget: 1 * 1000 * 1000,
 	scriptPath: scriptPath,
 	resourcePath: scriptPath + '/resources',
 	getLRU: function () {
@@ -45907,6 +45907,7 @@ const context = require('./context');
 Potree.version = context.version;
 
 console.log('Potree ' + context.version.major + '.' + context.version.minor + context.version.suffix);
+console.log('UPDATED VERSION');
 
 Potree.webgl = {
 	shaders: {},
