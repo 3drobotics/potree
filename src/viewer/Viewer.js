@@ -32,7 +32,7 @@ const CameraMode = require('./CameraMode');
 const OrbitControls = require('../navigation/OrbitControls');
 const EarthControls = require('../navigation/EarthControls');
 // const initSidebar = require('./initSidebar');
-// const Features = require('../Features');
+const Features = require('../Features');
 // const i18n = require('../i18n');
 // const ProgressBar = require('./ProgressBar');
 const Stats = require('stats.js');
@@ -116,6 +116,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		// document.body.appendChild( this.stats.dom );
 		// this.stats.dom.style.left = "100px";
 
+		this.potreeRenderer = null;
 		this.edlRenderer = null;
 		this.renderer = null;
 
@@ -1256,11 +1257,19 @@ class PotreeViewer extends THREE.EventDispatcher {
 		const queries = GLQueries.forGL(this.renderer.getContext());
 		queries.start('frame');
 
-		if (!this.edlRenderer) {
-			const EDLRenderer = require('./EDLRenderer');
-			this.edlRenderer = new EDLRenderer(this);
+		if (this.useEDL && Features.SHADER_EDL.isSupported()) {
+			if (!this.edlRenderer) {
+				const EDLRenderer = require('./EDLRenderer');
+				this.edlRenderer = new EDLRenderer(this);
+			}
+			this.edlRenderer.render(this.renderer);
+		} else {
+			if (!this.potreeRenderer) {
+				const PotreeRenderer = require('./PotreeRenderer');
+				this.potreeRenderer = new PotreeRenderer(this);
+			}
+			this.potreeRenderer.render();
 		}
-		this.edlRenderer.render(this.renderer);
 
 		if (queries.enabled) {
 			queries.end();
