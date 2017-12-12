@@ -37,5 +37,6 @@ Potree.PointSizeType = require('./materials/PointSizeType');
 Potree.PointShape = require('./materials/PointShape');
 Potree.Viewer = require('./viewer/Viewer');
 Potree.loadPointCloud = require('./utils/loadPointCloud');
+Potree.Measure = require('./utils/Measure');
 
 module.exports = Potree;
