@@ -20,7 +20,7 @@ class Measure extends THREE.Object3D {
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
 
 		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
-		this.color = new THREE.Color(0xff0000);
+		this.color = new THREE.Color(0x3BB2D0);
 
 		this.lengthUnit = {code: 'm'};
 
@@ -43,7 +43,7 @@ class Measure extends THREE.Object3D {
 					new THREE.Vector3());
 				lineGeometry.colors.push(this.color, this.color, this.color);
 				let lineMaterial = new THREE.LineDashedMaterial(
-					{ color: 0xff0000, dashSize: 5, gapSize: 2 });
+					{ color: this.color, dashSize: 5, gapSize: 2 });
 
 				lineMaterial.depthTest = false;
 				this.heightEdge = new THREE.Line(lineGeometry, lineMaterial);
