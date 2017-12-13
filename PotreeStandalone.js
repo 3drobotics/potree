@@ -45617,7 +45617,7 @@ LRU.prototype.disposeDescendants = function (node) {
 
 module.exports = LRU;
 
-},{"./LRUItem":7,"./context":11}],7:[function(require,module,exports){
+},{"./LRUItem":7,"./context":12}],7:[function(require,module,exports){
 /**
  *
  * @param node
@@ -45888,7 +45888,137 @@ Object.assign(PointCloudOctreeGeometryNode.prototype, THREE.EventDispatcher.prot
 
 module.exports = PointCloudOctreeGeometryNode;
 
-},{"./loader/POCLoader":14,"./tree/PointCloudTreeNode":41,"three":4}],10:[function(require,module,exports){
+},{"./loader/POCLoader":15,"./tree/PointCloudTreeNode":42,"three":4}],10:[function(require,module,exports){
+/**
+ * adapted from http://stemkoski.github.io/Three.js/Sprite-Text-Labels.html
+ */
+const THREE = require('three');
+
+const TextSprite = function (text) {
+	THREE.Object3D.call(this);
+
+	var texture = new THREE.Texture();
+	texture.minFilter = THREE.LinearFilter;
+	texture.magFilter = THREE.LinearFilter;
+	var spriteMaterial = new THREE.SpriteMaterial({
+		map: texture,
+		// useScreenCoordinates: false,
+		depthTest: false,
+		depthWrite: false});
+
+	this.material = spriteMaterial;
+	this.sprite = new THREE.Sprite(spriteMaterial);
+	this.add(this.sprite);
+
+	// THREE.Sprite.call(this, spriteMaterial);
+
+	this.borderThickness = 4;
+	this.fontface = 'Arial';
+	this.fontsize = 28;
+	this.borderColor = { r: 0, g: 0, b: 0, a: 1.0 };
+	this.backgroundColor = { r: 255, g: 255, b: 255, a: 1.0 };
+	this.textColor = {r: 255, g: 255, b: 255, a: 1.0};
+	this.text = '';
+
+	this.setText(text);
+};
+
+TextSprite.prototype = new THREE.Object3D();
+
+TextSprite.prototype.setText = function (text) {
+	if (this.text !== text) {
+		this.text = text;
+
+		this.update();
+	}
+};
+
+TextSprite.prototype.setTextColor = function (color) {
+	this.textColor = color;
+
+	this.update();
+};
+
+TextSprite.prototype.setBorderColor = function (color) {
+	this.borderColor = color;
+
+	this.update();
+};
+
+TextSprite.prototype.setBackgroundColor = function (color) {
+	this.backgroundColor = color;
+
+	this.update();
+};
+
+TextSprite.prototype.update = function () {
+	var canvas = document.createElement('canvas');
+	var context = canvas.getContext('2d');
+	context.font = 'Bold ' + this.fontsize + 'px ' + this.fontface;
+
+	// get size data (height depends only on font size)
+	var metrics = context.measureText(this.text);
+	var textWidth = metrics.width;
+	var margin = 5;
+	var spriteWidth = 2 * margin + textWidth + 2 * this.borderThickness;
+	var spriteHeight = this.fontsize * 1.4 + 2 * this.borderThickness;
+
+	context.canvas.width = spriteWidth;
+	context.canvas.height = spriteHeight;
+	context.font = 'Bold ' + this.fontsize + 'px ' + this.fontface;
+
+	// background color
+	context.fillStyle = 'rgba(' + this.backgroundColor.r + ',' + this.backgroundColor.g + ',' +
+		this.backgroundColor.b + ',' + this.backgroundColor.a + ')';
+	// border color
+	context.strokeStyle = 'rgba(' + this.borderColor.r + ',' + this.borderColor.g + ',' +
+		this.borderColor.b + ',' + this.borderColor.a + ')';
+
+	context.lineWidth = this.borderThickness;
+	this.roundRect(context, this.borderThickness / 2, this.borderThickness / 2,
+		textWidth + this.borderThickness + 2 * margin, this.fontsize * 1.4 + this.borderThickness, 6);
+
+	// text color
+	context.strokeStyle = 'rgba(0, 0, 0, 1.0)';
+	context.strokeText(this.text, this.borderThickness + margin, this.fontsize + this.borderThickness);
+
+	context.fillStyle = 'rgba(' + this.textColor.r + ',' + this.textColor.g + ',' +
+		this.textColor.b + ',' + this.textColor.a + ')';
+	context.fillText(this.text, this.borderThickness + margin, this.fontsize + this.borderThickness);
+
+	var texture = new THREE.Texture(canvas);
+	texture.minFilter = THREE.LinearFilter;
+	texture.magFilter = THREE.LinearFilter;
+	texture.needsUpdate = true;
+
+	// var spriteMaterial = new THREE.SpriteMaterial(
+	//	{ map: texture, useScreenCoordinates: false } );
+	this.sprite.material.map = texture;
+
+	this.sprite.scale.set(spriteWidth * 0.01, spriteHeight * 0.01, 1.0);
+
+	// this.material = spriteMaterial;
+};
+
+TextSprite.prototype.roundRect = function (ctx, x, y, w, h, r) {
+	ctx.beginPath();
+	ctx.moveTo(x + r, y);
+	ctx.lineTo(x + w - r, y);
+	ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+	ctx.lineTo(x + w, y + h - r);
+	ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+	ctx.lineTo(x + r, y + h);
+	ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+	ctx.lineTo(x, y + r);
+	ctx.quadraticCurveTo(x, y, x + r, y);
+	ctx.closePath();
+	ctx.fill();
+	ctx.stroke();
+};
+
+module.exports = TextSprite;
+
+},{"three":4}],11:[function(require,module,exports){
 
 const Version = function (version) {
 	this.version = version;
@@ -45930,7 +46060,7 @@ Version.prototype.upTo = function (version) {
 
 module.exports = Version;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 const LRU = require('./LRU');
 
 let scriptPath = '';
@@ -45966,7 +46096,7 @@ module.exports = {
 	}
 };
 
-},{"./LRU":6}],12:[function(require,module,exports){
+},{"./LRU":6}],13:[function(require,module,exports){
 const GLQueries = require('./webgl/GLQueries');
 
 function Potree () {}
@@ -46006,10 +46136,11 @@ Potree.PointSizeType = require('./materials/PointSizeType');
 Potree.PointShape = require('./materials/PointShape');
 Potree.Viewer = require('./viewer/Viewer');
 Potree.loadPointCloud = require('./utils/loadPointCloud');
+Potree.Measure = require('./utils/Measure');
 
 module.exports = Potree;
 
-},{"./context":11,"./loader/POCLoader":14,"./materials/PointShape":25,"./materials/PointSizeType":26,"./utils/loadPointCloud":51,"./viewer/Viewer":64,"./webgl/GLQueries":65}],13:[function(require,module,exports){
+},{"./context":12,"./loader/POCLoader":15,"./materials/PointShape":26,"./materials/PointSizeType":27,"./utils/Measure":45,"./utils/loadPointCloud":55,"./viewer/Viewer":69,"./webgl/GLQueries":70}],14:[function(require,module,exports){
 const Version = require('../Version');
 const PointAttributeNames = require('./PointAttributeNames');
 const THREE = require('three');
@@ -46138,7 +46269,7 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 
 module.exports = BinaryLoader;
 
-},{"../Version":10,"../context":11,"./PointAttributeNames":16,"three":4}],14:[function(require,module,exports){
+},{"../Version":11,"../context":12,"./PointAttributeNames":17,"three":4}],15:[function(require,module,exports){
 const PointCloudOctreeGeometry = require('../PointCloudOctreeGeometry');
 const PointCloudOctreeGeometryNode = require('../PointCloudOctreeGeometryNode');
 const Version = require('../Version');
@@ -46315,7 +46446,7 @@ POCLoader.createChildAABB = function (aabb, index) {
 	return new THREE.Box3(min, max);
 };
 
-},{"../PointCloudOctreeGeometry":8,"../PointCloudOctreeGeometryNode":9,"../Version":10,"./BinaryLoader":13,"./PointAttribute":15,"./PointAttributes":18,"three":4}],15:[function(require,module,exports){
+},{"../PointCloudOctreeGeometry":8,"../PointCloudOctreeGeometryNode":9,"../Version":11,"./BinaryLoader":14,"./PointAttribute":16,"./PointAttributes":19,"three":4}],16:[function(require,module,exports){
 const PointAttributeNames = require('./PointAttributeNames');
 const PointAttributeTypes = require('./PointAttributeTypes');
 
@@ -46379,7 +46510,7 @@ PointAttribute.NORMAL = new PointAttribute(
 
 module.exports = PointAttribute;
 
-},{"./PointAttributeNames":16,"./PointAttributeTypes":17}],16:[function(require,module,exports){
+},{"./PointAttributeNames":17,"./PointAttributeTypes":18}],17:[function(require,module,exports){
 const PointAttributeNames = {};
 
 PointAttributeNames.POSITION_CARTESIAN = 0; // float x, y, z;
@@ -46396,7 +46527,7 @@ PointAttributeNames.NORMAL = 10;
 
 module.exports = PointAttributeNames;
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 /**
  * Some types of possible point attribute data formats
  *
@@ -46423,7 +46554,7 @@ for (var obj in PointAttributeTypes) {
 
 module.exports = PointAttributeTypes;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 const PointAttribute = require('./PointAttribute');
 const PointAttributeNames = require('./PointAttributeNames');
 
@@ -46483,7 +46614,7 @@ PointAttributes.prototype.hasNormals = function () {
 
 module.exports = PointAttributes;
 
-},{"./PointAttribute":15,"./PointAttributeNames":16}],19:[function(require,module,exports){
+},{"./PointAttribute":16,"./PointAttributeNames":17}],20:[function(require,module,exports){
 const THREE = require('three');
 module.exports = {
 	'DEFAULT': {
@@ -46502,7 +46633,7 @@ module.exports = {
 	}
 };
 
-},{"three":4}],20:[function(require,module,exports){
+},{"three":4}],21:[function(require,module,exports){
 const ClipMode = {
 	DISABLED: 0,
 	HIGHLIGHT: 1,
@@ -46521,7 +46652,7 @@ Object.defineProperty(ClipMode, 'forCode', {
 });
 module.exports = ClipMode;
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 const PointColorType = require('./PointColorType');
 const THREE = require('three');
 const vs = require('./shaders/edl.vs');
@@ -46620,7 +46751,7 @@ Object.defineProperty(EyeDomeLightingMaterial.prototype, 'neighbourCount', {
 
 module.exports = EyeDomeLightingMaterial;
 
-},{"./PointColorType":24,"./shaders/edl.fs":28,"./shaders/edl.vs":29,"three":4}],22:[function(require,module,exports){
+},{"./PointColorType":25,"./shaders/edl.fs":29,"./shaders/edl.vs":30,"three":4}],23:[function(require,module,exports){
 const THREE = require('three');
 module.exports = {
 	RAINBOW: [
@@ -46704,7 +46835,7 @@ module.exports = {
 	]
 };
 
-},{"three":4}],23:[function(require,module,exports){
+},{"three":4}],24:[function(require,module,exports){
 const THREE = require('three');
 const vs = require('./shaders/pointcloud.vs');
 const fs = require('./shaders/pointcloud.fs');
@@ -47630,7 +47761,7 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 };
 
-},{"../utils/generateDataTexture":48,"./Classification":19,"./Gradients":22,"./PointColorType":24,"./PointShape":25,"./PointSizeType":26,"./TreeType":27,"./shaders/pointcloud.fs":30,"./shaders/pointcloud.vs":31,"three":4}],24:[function(require,module,exports){
+},{"../utils/generateDataTexture":52,"./Classification":20,"./Gradients":23,"./PointColorType":25,"./PointShape":26,"./PointSizeType":27,"./TreeType":28,"./shaders/pointcloud.fs":31,"./shaders/pointcloud.vs":32,"three":4}],25:[function(require,module,exports){
 module.exports = {
 	RGB: 0,
 	COLOR: 1,
@@ -47651,27 +47782,27 @@ module.exports = {
 	COMPOSITE: 50
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = {
 	SQUARE: 0,
 	CIRCLE: 1,
 	PARABOLOID: 2
 };
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = {
 	FIXED: 0,
 	ATTENUATED: 1,
 	ADAPTIVE: 2
 };
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = {
 	OCTREE:	0,
 	KDTREE:	1
 };
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 module.exports = function parse(params){
       var template = "#define NEIGHBOUR_COUNT {{neighbourCount}} \n" +
 "// \n" +
@@ -47735,7 +47866,7 @@ module.exports = function parse(params){
       return template
     };
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 module.exports = function parse(params){
       var template = "#define NEIGHBOUR_COUNT {{neighbourCount}} \n" +
 " \n" +
@@ -47757,7 +47888,7 @@ module.exports = function parse(params){
       return template
     };
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 module.exports = function parse(params){
       var template = "{{defines}} \n" +
 "precision mediump float; \n" +
@@ -48038,7 +48169,7 @@ module.exports = function parse(params){
       return template
     };
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 module.exports = function parse(params){
       var template = "{{defines}} \n" +
 "precision mediump float; \n" +
@@ -48588,7 +48719,7 @@ module.exports = function parse(params){
       return template
     };
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 const THREE = require('three');
 const TWEEN = require('@tweenjs/tween.js');
 const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
@@ -48888,7 +49019,7 @@ class EarthControls extends THREE.EventDispatcher {
 
 module.exports = EarthControls;
 
-},{"../utils/Mouse":44,"../utils/getMousePointCloudIntersection":49,"../utils/projectedRadius":52,"@tweenjs/tween.js":1,"three":4}],33:[function(require,module,exports){
+},{"../utils/Mouse":47,"../utils/getMousePointCloudIntersection":53,"../utils/projectedRadius":56,"@tweenjs/tween.js":1,"three":4}],34:[function(require,module,exports){
 const THREE = require('three');
 const TWEEN = require('@tweenjs/tween.js');
 const MOUSE = require('../utils/Mouse');
@@ -49160,7 +49291,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
 
 module.exports = FirstPersonControls;
 
-},{"../utils/Mouse":44,"../utils/getMousePointCloudIntersection":49,"@tweenjs/tween.js":1,"three":4}],34:[function(require,module,exports){
+},{"../utils/Mouse":47,"../utils/getMousePointCloudIntersection":53,"@tweenjs/tween.js":1,"three":4}],35:[function(require,module,exports){
 const THREE = require('three');
 const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
 
@@ -49798,7 +49929,7 @@ class InputHandler extends THREE.EventDispatcher {
 
 module.exports = InputHandler;
 
-},{"../utils/getMousePointCloudIntersection":49,"three":4}],35:[function(require,module,exports){
+},{"../utils/getMousePointCloudIntersection":53,"three":4}],36:[function(require,module,exports){
 const THREE = require('three');
 const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
 const MOUSE = require('../utils/Mouse');
@@ -50070,7 +50201,7 @@ class OrbitControls extends THREE.EventDispatcher {
 
 module.exports = OrbitControls;
 
-},{"../utils/Mouse":44,"../utils/getMousePointCloudIntersection":49,"@tweenjs/tween.js":1,"three":4}],36:[function(require,module,exports){
+},{"../utils/Mouse":47,"../utils/getMousePointCloudIntersection":53,"@tweenjs/tween.js":1,"three":4}],37:[function(require,module,exports){
 const DEMNode = require('./DEMNode');
 const context = require('../context');
 
@@ -50297,7 +50428,7 @@ module.exports = class DEM {
 	}
 };
 
-},{"../context":11,"./DEMNode":37}],37:[function(require,module,exports){
+},{"../context":12,"./DEMNode":38}],38:[function(require,module,exports){
 //
 // index is in order xyzxyzxyz
 //
@@ -50435,7 +50566,7 @@ module.exports = class DEMNode {
 	}
 };
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 const THREE = require('three');
 const PointCloudTree = require('./PointCloudTree');
 const PointCloudMaterial = require('../materials/PointCloudMaterial');
@@ -51210,7 +51341,7 @@ class PointCloudOctree extends PointCloudTree {
 
 module.exports = PointCloudOctree;
 
-},{"../PointCloudOctreeGeometryNode":9,"../materials/PointCloudMaterial":23,"../materials/PointColorType":24,"../materials/PointSizeType":26,"../utils/computeTransformedBoundingBox":45,"./PointCloudOctreeNode":39,"./PointCloudTree":40,"three":4}],39:[function(require,module,exports){
+},{"../PointCloudOctreeGeometryNode":9,"../materials/PointCloudMaterial":24,"../materials/PointColorType":25,"../materials/PointSizeType":27,"../utils/computeTransformedBoundingBox":49,"./PointCloudOctreeNode":40,"./PointCloudTree":41,"three":4}],40:[function(require,module,exports){
 const PointCloudTreeNode = require('./PointCloudTreeNode');
 
 class PointCloudOctreeNode extends PointCloudTreeNode {
@@ -51270,7 +51401,7 @@ class PointCloudOctreeNode extends PointCloudTreeNode {
 PointCloudOctreeNode.prototype = Object.create(PointCloudTreeNode.prototype);
 module.exports = PointCloudOctreeNode;
 
-},{"./PointCloudTreeNode":41}],40:[function(require,module,exports){
+},{"./PointCloudTreeNode":42}],41:[function(require,module,exports){
 const DEM = require('./DEM');
 const THREE = require('three');
 
@@ -51286,7 +51417,7 @@ module.exports = class PointCloudTree extends THREE.Object3D {
 	}
 };
 
-},{"./DEM":36,"three":4}],41:[function(require,module,exports){
+},{"./DEM":37,"three":4}],42:[function(require,module,exports){
 module.exports = class {
 	getChildren () {
 		throw new Error('override function');
@@ -51317,7 +51448,7 @@ module.exports = class {
 	}
 };
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 /*
 ** Binary Heap implementation in Javascript
 ** From: http://eloquentjavascript.net/1st_edition/appendix2.htmlt
@@ -51442,7 +51573,7 @@ BinaryHeap.prototype = {
 
 module.exports = BinaryHeap;
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 const THREE = require('three');
 
 /**
@@ -51483,14 +51614,829 @@ class Box3Helper extends THREE.LineSegments {
 
 module.exports = Box3Helper;
 
-},{"three":4}],44:[function(require,module,exports){
+},{"three":4}],45:[function(require,module,exports){
+const THREE = require('three');
+const TextSprite = require('../TextSprite');
+const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
+const addCommas = require('./addCommas');
+
+class Measure extends THREE.Object3D {
+	constructor () {
+		super();
+
+		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+
+		this.name = 'Measure_' + this.constructor.counter;
+		this.points = [];
+		this._showDistances = true;
+		this._showCoordinates = false;
+		this._showArea = false;
+		this._closed = true;
+		this._showAngles = false;
+		this._showHeight = false;
+		this.maxMarkers = Number.MAX_SAFE_INTEGER;
+
+		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
+		this.color = new THREE.Color(0x3BB2D0);
+
+		this.lengthUnit = {code: 'm'};
+
+		this.spheres = [];
+		this.edges = [];
+		this.sphereLabels = [];
+		this.edgeLabels = [];
+		this.angleLabels = [];
+		this.coordinateLabels = [];
+
+		// this.heightEdge;
+		// this.heightLabel;
+		{ // height stuff
+			{ // height line
+				let lineGeometry = new THREE.Geometry();
+				lineGeometry.vertices.push(
+					new THREE.Vector3(),
+					new THREE.Vector3(),
+					new THREE.Vector3(),
+					new THREE.Vector3());
+				lineGeometry.colors.push(this.color, this.color, this.color);
+				let lineMaterial = new THREE.LineDashedMaterial(
+					{ color: this.color, dashSize: 5, gapSize: 2 });
+
+				lineMaterial.depthTest = false;
+				this.heightEdge = new THREE.Line(lineGeometry, lineMaterial);
+				this.heightEdge.visible = false;
+
+				this.add(this.heightEdge);
+			}
+
+			{ // height label
+				this.heightLabel = new TextSprite('');
+				this.heightLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
+				this.heightLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
+				this.heightLabel.setTextColor({r: 180, g: 220, b: 180, a: 1.0});
+				this.heightLabel.material.depthTest = false;
+				this.heightLabel.material.opacity = 1;
+				this.heightLabel.visible = false; ;
+				this.add(this.heightLabel);
+			}
+		}
+
+		this.areaLabel = new TextSprite('');
+		this.areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
+		this.areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
+		this.areaLabel.setTextColor({r: 180, g: 220, b: 180, a: 1.0});
+		this.areaLabel.material.depthTest = false;
+		this.areaLabel.material.opacity = 1;
+		this.areaLabel.visible = false; ;
+		this.add(this.areaLabel);
+	}
+
+	createSphereMaterial () {
+		let sphereMaterial = new THREE.MeshLambertMaterial({
+			shading: THREE.SmoothShading,
+			color: this.color,
+			depthTest: false,
+			depthWrite: false}
+		);
+
+		return sphereMaterial;
+	};
+
+	addMarker (point) {
+		if (point instanceof THREE.Vector3) {
+			point = {position: point};
+		}
+		this.points.push(point);
+
+		// sphere
+		let sphere = new THREE.Mesh(this.sphereGeometry, this.createSphereMaterial());
+
+		this.add(sphere);
+		this.spheres.push(sphere);
+
+		{ // edges
+			let lineGeometry = new THREE.Geometry();
+			lineGeometry.vertices.push(new THREE.Vector3(), new THREE.Vector3());
+			lineGeometry.colors.push(this.color, this.color, this.color);
+			let lineMaterial = new THREE.LineBasicMaterial({
+				linewidth: 1
+			});
+			lineMaterial.depthTest = false;
+			let edge = new THREE.Line(lineGeometry, lineMaterial);
+			edge.visible = true;
+
+			this.add(edge);
+			this.edges.push(edge);
+		}
+
+		{ // edge labels
+			let edgeLabel = new TextSprite();
+			edgeLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
+			edgeLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
+			edgeLabel.material.depthTest = false;
+			edgeLabel.visible = false;
+			this.edgeLabels.push(edgeLabel);
+			this.add(edgeLabel);
+		}
+
+		{ // angle labels
+			let angleLabel = new TextSprite();
+			angleLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
+			angleLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
+			angleLabel.material.depthTest = false;
+			angleLabel.material.opacity = 1;
+			angleLabel.visible = false;
+			this.angleLabels.push(angleLabel);
+			this.add(angleLabel);
+		}
+
+		{ // coordinate labels
+			let coordinateLabel = new TextSprite();
+			coordinateLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
+			coordinateLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
+			coordinateLabel.material.depthTest = false;
+			coordinateLabel.material.opacity = 1;
+			coordinateLabel.visible = false;
+			this.coordinateLabels.push(coordinateLabel);
+			this.add(coordinateLabel);
+		}
+
+		{ // Event Listeners
+			let drag = (e) => {
+				let I = getMousePointCloudIntersection(
+					e.drag.end,
+					e.viewer.scene.getActiveCamera(),
+					e.viewer.renderer,
+					e.viewer.scene.pointclouds);
+
+				if (I) {
+					let i = this.spheres.indexOf(e.drag.object);
+					if (i !== -1) {
+						let point = this.points[i];
+						for (let key of Object.keys(I.point).filter(e => e !== 'position')) {
+							point[key] = I.point[key];
+						}
+
+						this.setPosition(i, I.location);
+					}
+				}
+			};
+
+			let drop = e => {
+				let i = this.spheres.indexOf(e.drag.object);
+				if (i !== -1) {
+					this.dispatchEvent({
+						'type': 'marker_dropped',
+						'measurement': this,
+						'index': i
+					});
+				}
+			};
+
+			let mouseover = (e) => e.object.material.emissive.setHex(0x888888);
+			let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
+
+			sphere.addEventListener('drag', drag);
+			sphere.addEventListener('drop', drop);
+			sphere.addEventListener('mouseover', mouseover);
+			sphere.addEventListener('mouseleave', mouseleave);
+		}
+
+		let event = {
+			type: 'marker_added',
+			measurement: this,
+			sphere: sphere
+		};
+		this.dispatchEvent(event);
+
+		this.setMarker(this.points.length - 1, point);
+	};
+
+	removeMarker (index) {
+		this.points.splice(index, 1);
+
+		this.remove(this.spheres[index]);
+
+		let edgeIndex = (index === 0) ? 0 : (index - 1);
+		this.remove(this.edges[edgeIndex]);
+		this.edges.splice(edgeIndex, 1);
+
+		this.remove(this.edgeLabels[edgeIndex]);
+		this.edgeLabels.splice(edgeIndex, 1);
+		this.coordinateLabels.splice(index, 1);
+
+		this.spheres.splice(index, 1);
+
+		this.update();
+
+		this.dispatchEvent({type: 'marker_removed', measurement: this});
+	};
+
+	setMarker (index, point) {
+		this.points[index] = point;
+
+		let event = {
+			type: 'marker_moved',
+			measure:	this,
+			index:	index,
+			position: point.position.clone()
+		};
+		this.dispatchEvent(event);
+
+		this.update();
+	}
+
+	setPosition (index, position) {
+		let point = this.points[index];
+		point.position.copy(position);
+
+		let event = {
+			type: 'marker_moved',
+			measure:	this,
+			index:	index,
+			position: position.clone()
+		};
+		this.dispatchEvent(event);
+
+		this.update();
+	};
+
+	getArea () {
+		let area = 0;
+		let j = this.points.length - 1;
+
+		for (let i = 0; i < this.points.length; i++) {
+			let p1 = this.points[i].position;
+			let p2 = this.points[j].position;
+			area += (p2.x + p1.x) * (p1.y - p2.y);
+			j = i;
+		}
+
+		return Math.abs(area / 2);
+	};
+
+	getTotalDistance () {
+		if (this.points.length === 0) {
+			return 0;
+		}
+
+		let distance = 0;
+
+		for (let i = 1; i < this.points.length; i++) {
+			let prev = this.points[i - 1].position;
+			let curr = this.points[i].position;
+			let d = prev.distanceTo(curr);
+
+			distance += d;
+		}
+
+		if (this.closed && this.points.length > 1) {
+			let first = this.points[0].position;
+			let last = this.points[this.points.length - 1].position;
+			let d = last.distanceTo(first);
+
+			distance += d;
+		}
+
+		return distance;
+	}
+
+	getAngleBetweenLines (cornerPoint, point1, point2) {
+		let v1 = new THREE.Vector3().subVectors(point1.position, cornerPoint.position);
+		let v2 = new THREE.Vector3().subVectors(point2.position, cornerPoint.position);
+		return v1.angleTo(v2);
+	};
+
+	getAngle (index) {
+		if (this.points.length < 3 || index >= this.points.length) {
+			return 0;
+		}
+
+		let previous = (index === 0) ? this.points[this.points.length - 1] : this.points[index - 1];
+		let point = this.points[index];
+		let next = this.points[(index + 1) % (this.points.length)];
+
+		return this.getAngleBetweenLines(point, previous, next);
+	};
+
+	update () {
+		if (this.points.length === 0) {
+			return;
+		} else if (this.points.length === 1) {
+			let point = this.points[0];
+			let position = point.position;
+			this.spheres[0].position.copy(position);
+
+			{ // coordinate labels
+				let coordinateLabel = this.coordinateLabels[0];
+
+				// let labelPos = position.clone();//.add(new THREE.Vector3(0,1,0));
+				// coordinateLabel.position.copy(labelPos);
+
+				/* let msg = addCommas(position.x.toFixed(2))
+					+ " / " + addCommas(position.y.toFixed(2))
+					+ " / " + addCommas(position.z.toFixed(2)); */
+				let msg = addCommas(position.z.toFixed(2) + ' ' + this.lengthUnit.code);
+				coordinateLabel.setText(msg);
+
+				coordinateLabel.visible = this.showCoordinates;
+			}
+
+			return;
+		}
+
+		let lastIndex = this.points.length - 1;
+
+		let centroid = new THREE.Vector3();
+		for (let i = 0; i <= lastIndex; i++) {
+			let point = this.points[i];
+			centroid.add(point.position);
+		}
+		centroid.divideScalar(this.points.length);
+
+		for (let i = 0; i <= lastIndex; i++) {
+			let index = i;
+			let nextIndex = (i + 1 > lastIndex) ? 0 : i + 1;
+			let previousIndex = (i === 0) ? lastIndex : i - 1;
+
+			let point = this.points[index];
+			let nextPoint = this.points[nextIndex];
+			let previousPoint = this.points[previousIndex];
+
+			let sphere = this.spheres[index];
+
+			// spheres
+			sphere.position.copy(point.position);
+			sphere.material.color = this.color;
+
+			{ // edges
+				let edge = this.edges[index];
+
+				edge.material.color = this.color;
+
+				edge.position.copy(point.position);
+
+				edge.geometry.vertices[0].set(0, 0, 0);
+				edge.geometry.vertices[1].copy(nextPoint.position).sub(point.position);
+
+				edge.geometry.verticesNeedUpdate = true;
+				edge.geometry.computeBoundingSphere();
+				edge.visible = index < lastIndex || this.closed;
+			}
+
+			{ // edge labels
+				let edgeLabel = this.edgeLabels[i];
+
+				let center = new THREE.Vector3().add(point.position);
+				center.add(nextPoint.position);
+				center = center.multiplyScalar(0.5);
+				let distance = point.position.distanceTo(nextPoint.position);
+
+				edgeLabel.position.copy(center);
+				edgeLabel.setText(addCommas(distance.toFixed(2)) + ' ' + this.lengthUnit.code);
+				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
+			}
+
+			{ // angle labels
+				let angleLabel = this.angleLabels[i];
+				let angle = this.getAngleBetweenLines(point, previousPoint, nextPoint);
+
+				let dir = nextPoint.position.clone().sub(previousPoint.position);
+				dir.multiplyScalar(0.5);
+				dir = previousPoint.position.clone().add(dir).sub(point.position).normalize();
+
+				let dist = Math.min(point.position.distanceTo(previousPoint.position), point.position.distanceTo(nextPoint.position));
+				dist = dist / 9;
+
+				let labelPos = point.position.clone().add(dir.multiplyScalar(dist));
+				angleLabel.position.copy(labelPos);
+
+				let msg = addCommas((angle * (180.0 / Math.PI)).toFixed(1)) + '\u00B0';
+				angleLabel.setText(msg);
+
+				angleLabel.visible = this.showAngles && (index < lastIndex || this.closed) && this.points.length >= 3 && angle > 0;
+			}
+
+			{ // coordinate labels
+				let coordinateLabel = this.coordinateLabels[0];
+
+				let labelPos = point.position.clone().add(new THREE.Vector3(0, 1, 0));
+				coordinateLabel.position.copy(labelPos);
+
+				/* let msg = addCommas(point.position.x.toFixed(2))
+					+ " / " + addCommas(point.position.y.toFixed(2))
+					+ " / " + addCommas(point.position.z.toFixed(2)); */
+
+				let msg = addCommas(point.position.z.toFixed(2) + ' ' + this.lengthUnit.code);
+				coordinateLabel.setText(msg);
+
+				// coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
+				coordinateLabel.visible = this.showCoordinates;
+			}
+		}
+
+		{ // update height stuff
+			let heightEdge = this.heightEdge;
+			heightEdge.visible = this.showHeight;
+			this.heightLabel.visible = this.showHeight;
+
+			if (this.showHeight) {
+				let sorted = this.points.slice().sort((a, b) => a.position.z - b.position.z);
+				let lowPoint = sorted[0].position.clone();
+				let highPoint = sorted[sorted.length - 1].position.clone();
+				let min = lowPoint.z;
+				let max = highPoint.z;
+				let height = max - min;
+
+				let start = new THREE.Vector3(highPoint.x, highPoint.y, min);
+				let end = new THREE.Vector3(highPoint.x, highPoint.y, max);
+
+				heightEdge.position.copy(lowPoint);
+
+				heightEdge.geometry.vertices[0].set(0, 0, 0);
+				heightEdge.geometry.vertices[1].copy(start).sub(lowPoint);
+				heightEdge.geometry.vertices[2].copy(start).sub(lowPoint);
+				heightEdge.geometry.vertices[3].copy(end).sub(lowPoint);
+
+				heightEdge.geometry.verticesNeedUpdate = true;
+				// heightEdge.geometry.computeLineDistances();
+				// heightEdge.geometry.lineDistancesNeedUpdate = true;
+				heightEdge.geometry.computeBoundingSphere();
+
+				// heightEdge.material.dashSize = height / 40;
+				// heightEdge.material.gapSize = height / 40;
+
+				let heightLabelPosition = start.clone().add(end).multiplyScalar(0.5);
+				this.heightLabel.position.copy(heightLabelPosition);
+				let msg = addCommas(height.toFixed(2)) + ' ' + this.lengthUnit.code;
+				this.heightLabel.setText(msg);
+			}
+		}
+
+		{ // update area label
+			this.areaLabel.position.copy(centroid);
+			this.areaLabel.visible = this.showArea && this.points.length >= 3;
+			let msg = addCommas(this.getArea().toFixed(1)) + ' ' + this.lengthUnit.code + '\u00B2';
+			this.areaLabel.setText(msg);
+		}
+	};
+
+	raycast (raycaster, intersects) {
+		for (let i = 0; i < this.points.length; i++) {
+			let sphere = this.spheres[i];
+
+			sphere.raycast(raycaster, intersects);
+		}
+
+		// recalculate distances because they are not necessarely correct
+		// for scaled objects.
+		// see https://github.com/mrdoob/three.js/issues/5827
+		// TODO: remove this once the bug has been fixed
+		for (let i = 0; i < intersects.length; i++) {
+			let I = intersects[i];
+			I.distance = raycaster.ray.origin.distanceTo(I.point);
+		}
+		intersects.sort(function (a, b) { return a.distance - b.distance; });
+	};
+
+	get showCoordinates () {
+		return this._showCoordinates;
+	}
+
+	set showCoordinates (value) {
+		this._showCoordinates = value;
+		this.update();
+	}
+
+	get showAngles () {
+		return this._showAngles;
+	}
+
+	set showAngles (value) {
+		this._showAngles = value;
+		this.update();
+	}
+
+	get showHeight () {
+		return this._showHeight;
+	}
+
+	set showHeight (value) {
+		this._showHeight = value;
+		this.update();
+	}
+
+	get showArea () {
+		return this._showArea;
+	}
+
+	set showArea (value) {
+		this._showArea = value;
+		this.update();
+	}
+
+	get closed () {
+		return this._closed;
+	}
+
+	set closed (value) {
+		this._closed = value;
+		this.update();
+	}
+
+	get showDistances () {
+		return this._showDistances;
+	}
+
+	set showDistances (value) {
+		this._showDistances = value;
+		this.update();
+	}
+};
+
+module.exports = Measure;
+
+},{"../TextSprite":10,"./addCommas":48,"./getMousePointCloudIntersection":53,"three":4}],46:[function(require,module,exports){
+const THREE = require('three');
+const Measure = require('./Measure');
+const projectedRadius = require('./projectedRadius');
+const projectedRadiusOrtho = require('./projectedRadiusOrtho');
+const CameraMode = require('../viewer/CameraMode');
+
+class MeasuringTool extends THREE.EventDispatcher {
+	constructor (viewer) {
+		super();
+
+		this.viewer = viewer;
+		this.renderer = viewer.renderer;
+
+		this.addEventListener('start_inserting_measurement', e => {
+			this.viewer.dispatchEvent({
+				type: 'cancel_insertions'
+			});
+		});
+
+		this.sceneMeasurement = new THREE.Scene();
+		this.sceneMeasurement.name = 'scene_measurement';
+		this.light = new THREE.PointLight(0xffffff, 1.0);
+		this.sceneMeasurement.add(this.light);
+
+		this.viewer.inputHandler.registerInteractiveScene(this.sceneMeasurement);
+
+		this.onRemove = (e) => { this.sceneMeasurement.remove(e.measurement); };
+		this.onAdd = e => { this.sceneMeasurement.add(e.measurement); };
+	}
+
+	setScene (scene) {
+		if (this.scene === scene) {
+			return;
+		}
+
+		if (this.scene) {
+			this.scene.removeEventListener('measurement_added', this.onAdd);
+			this.scene.removeEventListener('measurement_removed', this.onRemove);
+		}
+
+		this.scene = scene;
+
+		this.scene.addEventListener('measurement_added', this.onAdd);
+		this.scene.addEventListener('measurement_removed', this.onRemove);
+	}
+
+	startInsertion (args = {}) {
+		let domElement = this.viewer.renderer.domElement;
+
+		let measure = new Measure();
+
+		this.dispatchEvent({
+			type: 'start_inserting_measurement',
+			measure: measure
+		});
+
+		measure.showDistances = (args.showDistances == null) ? true : args.showDistances;
+		measure.showArea = args.showArea || false;
+		measure.showAngles = args.showAngles || false;
+		measure.showCoordinates = args.showCoordinates || false;
+		measure.showHeight = args.showHeight || false;
+		measure.closed = args.closed || false;
+		measure.maxMarkers = args.maxMarkers || Infinity;
+		measure.name = args.name || 'Measurement';
+
+		this.sceneMeasurement.add(measure);
+
+		let cancel = {
+			removeLastMarker: measure.maxMarkers > 3,
+			callback: null
+		};
+
+		let insertionCallback = (e) => {
+			if (e.button === THREE.MOUSE.LEFT) {
+				measure.addMarker(measure.points[measure.points.length - 1].position.clone());
+
+				if (measure.points.length >= measure.maxMarkers) {
+					cancel.callback();
+				}
+
+				this.viewer.inputHandler.startDragging(
+					measure.spheres[measure.spheres.length - 1]);
+			} else if (e.button === THREE.MOUSE.RIGHT) {
+				cancel.callback();
+			}
+		};
+
+		cancel.callback = e => {
+			if (cancel.removeLastMarker) {
+				measure.removeMarker(measure.points.length - 1);
+			}
+			domElement.removeEventListener('mouseup', insertionCallback, true);
+			this.viewer.removeEventListener('cancel_insertions', cancel.callback);
+		};
+
+		if (measure.maxMarkers > 1) {
+			this.viewer.addEventListener('cancel_insertions', cancel.callback);
+			domElement.addEventListener('mouseup', insertionCallback, true);
+		}
+
+		measure.addMarker(new THREE.Vector3(0, 0, 0));
+		this.viewer.inputHandler.startDragging(
+			measure.spheres[measure.spheres.length - 1]);
+
+		this.viewer.scene.addMeasurement(measure);
+	}
+
+	update () {
+		let camera = this.viewer.scene.getActiveCamera();
+		let domElement = this.renderer.domElement;
+		let measurements = this.viewer.scene.measurements;
+
+		this.light.position.copy(camera.position);
+
+		// make size independant of distance
+		for (let measure of measurements) {
+			measure.lengthUnit = this.viewer.lengthUnit;
+			measure.update();
+
+			// spheres
+			for (let sphere of measure.spheres) {
+				let pr = 0;
+				if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+					let distance = camera.position.distanceTo(sphere.getWorldPosition());
+					pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+				} else {
+					pr = projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+				}
+				let scale = (15 / pr);
+				sphere.scale.set(scale, scale, scale);
+			}
+
+			// labels
+			let labels = measure.edgeLabels.concat(measure.angleLabels);
+			for (let label of labels) {
+				let pr = 0;
+				if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+					let distance = camera.position.distanceTo(label.getWorldPosition());
+					pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+				} else {
+					pr = projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+				}
+				let scale = (70 / pr);
+				label.scale.set(scale, scale, scale);
+			}
+
+			// coordinate labels
+			for (let j = 0; j < measure.coordinateLabels.length; j++) {
+				let label = measure.coordinateLabels[j];
+				let sphere = measure.spheres[j];
+				// measure.points[j]
+
+				let distance = camera.position.distanceTo(sphere.getWorldPosition());
+
+				let screenPos = sphere.getWorldPosition().clone().project(camera);
+				screenPos.x = Math.round((screenPos.x + 1) * domElement.clientWidth / 2);
+				screenPos.y = Math.round((-screenPos.y + 1) * domElement.clientHeight / 2);
+				screenPos.z = 0;
+				screenPos.y -= 30;
+
+				let labelPos = new THREE.Vector3(
+					(screenPos.x / domElement.clientWidth) * 2 - 1,
+					-(screenPos.y / domElement.clientHeight) * 2 + 1,
+					0.5);
+				labelPos.unproject(camera);
+				if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+					let direction = labelPos.sub(camera.position).normalize();
+					labelPos = new THREE.Vector3().addVectors(
+						camera.position, direction.multiplyScalar(distance));
+				}
+				label.position.copy(labelPos);
+
+				let pr = 0;
+				if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+					pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+				} else {
+					pr = projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+				}
+
+				let scale = (70 / pr);
+				label.scale.set(scale, scale, scale);
+			}
+
+			// height label
+			if (measure.showHeight) {
+				let label = measure.heightLabel;
+
+				{
+					let pr = 0;
+					if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+						let distance = label.position.distanceTo(camera.position);
+						pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+					} else {
+						pr = projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+					}
+					let scale = (70 / pr);
+					label.scale.set(scale, scale, scale);
+				}
+
+				{ // height edge
+					let edge = measure.heightEdge;
+					let lowpoint = edge.geometry.vertices[0].clone().add(edge.position);
+					let start = edge.geometry.vertices[2].clone().add(edge.position);
+					let end = edge.geometry.vertices[3].clone().add(edge.position);
+
+					let lowScreen = lowpoint.clone().project(camera);
+					let startScreen = start.clone().project(camera);
+					let endScreen = end.clone().project(camera);
+
+					let toPixelCoordinates = v => {
+						let r = v.clone().addScalar(1).divideScalar(2);
+						r.x = r.x * domElement.clientWidth;
+						r.y = r.y * domElement.clientHeight;
+						r.z = 0;
+
+						return r;
+					};
+
+					let lowEL = toPixelCoordinates(lowScreen);
+					let startEL = toPixelCoordinates(startScreen);
+					let endEL = toPixelCoordinates(endScreen);
+
+					let lToS = lowEL.distanceTo(startEL);
+					let sToE = startEL.distanceTo(endEL);
+
+					edge.geometry.lineDistances = [0, lToS, lToS, lToS + sToE];
+					edge.geometry.lineDistancesNeedUpdate = true;
+
+					edge.material.dashSize = 10;
+					edge.material.gapSize = 10;
+				}
+			}
+
+			{ // area label
+				let label = measure.areaLabel;
+
+				let pr = 0;
+				if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+					let distance = label.position.distanceTo(camera.position);
+					pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+				} else {
+					pr = projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+				}
+
+				let scale = (70 / pr);
+				label.scale.set(scale, scale, scale);
+			}
+		}
+	}
+};
+
+module.exports = MeasuringTool;
+
+},{"../viewer/CameraMode":63,"./Measure":45,"./projectedRadius":56,"./projectedRadiusOrtho":57,"three":4}],47:[function(require,module,exports){
 module.exports = {
 	LEFT: 0b0001,
 	RIGHT: 0b0010,
 	MIDDLE: 0b0100
 };
 
-},{}],45:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
+/**
+ * add separators to large numbers
+ *
+ * @param nStr
+ * @returns
+ */
+module.exports = (nStr) => {
+	nStr += '';
+	let x = nStr.split('.');
+	let x1 = x[0];
+	let x2 = x.length > 1 ? '.' + x[1] : '';
+	let rgx = /(\d+)(\d{3})/;
+	while (rgx.test(x1)) {
+		x1 = x1.replace(rgx, '$1' + ',' + '$2');
+	}
+	return x1 + x2;
+};
+
+},{}],49:[function(require,module,exports){
 const THREE = require('three');
 
 /**
@@ -51515,7 +52461,7 @@ module.exports = (box, transform) => {
 	return boundingBox;
 };
 
-},{"three":4}],46:[function(require,module,exports){
+},{"three":4}],50:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = (width, height) => {
@@ -51555,7 +52501,7 @@ module.exports = (width, height) => {
 	return texture;
 };
 
-},{"three":4}],47:[function(require,module,exports){
+},{"three":4}],51:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = (width, length, spacing, color) => {
@@ -51579,7 +52525,7 @@ module.exports = (width, length, spacing, color) => {
 	return line;
 };
 
-},{"three":4}],48:[function(require,module,exports){
+},{"three":4}],52:[function(require,module,exports){
 const THREE = require('three');
 
 // code taken from three.js
@@ -51605,7 +52551,7 @@ module.exports = (width, height, color) => {
 	return texture;
 };
 
-},{"three":4}],49:[function(require,module,exports){
+},{"three":4}],53:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = (mouse, camera, renderer, pointclouds) => {
@@ -51658,7 +52604,7 @@ module.exports = (mouse, camera, renderer, pointclouds) => {
 	}
 };
 
-},{"three":4}],50:[function(require,module,exports){
+},{"three":4}],54:[function(require,module,exports){
 // from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
 module.exports = (name) => {
 	name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
@@ -51667,7 +52613,7 @@ module.exports = (name) => {
 	return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, ' '));
 };
 
-},{}],51:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 /* eslint-disable standard/no-callback-literal */
 const PointCloudOctree = require('../tree/PointCloudOctree');
 // const PointCloudArena4D = require('../arena4d/PointCloudArena4D');
@@ -51718,7 +52664,7 @@ module.exports = function (path, name, callback) {
 	}
 };
 
-},{"../loader/POCLoader":14,"../tree/PointCloudOctree":38}],52:[function(require,module,exports){
+},{"../loader/POCLoader":15,"../tree/PointCloudOctree":39}],56:[function(require,module,exports){
 module.exports = (radius, fov, distance, screenHeight) => {
 	let projFactor = (1 / Math.tan(fov / 2)) / distance;
 	projFactor = projFactor * screenHeight / 2;
@@ -51726,7 +52672,25 @@ module.exports = (radius, fov, distance, screenHeight) => {
 	return radius * projFactor;
 };
 
-},{}],53:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
+const THREE = require('three');
+
+module.exports = function (radius, proj, screenWidth, screenHeight) {
+	let p1 = new THREE.Vector4(0);
+	let p2 = new THREE.Vector4(radius);
+
+	p1.applyMatrix4(proj);
+	p2.applyMatrix4(proj);
+	p1 = new THREE.Vector3(p1.x, p1.y, p1.z);
+	p2 = new THREE.Vector3(p2.x, p2.y, p2.z);
+	p1.x = (p1.x + 1.0) * 0.5 * screenWidth;
+	p1.y = (p1.y + 1.0) * 0.5 * screenHeight;
+	p2.x = (p2.x + 1.0) * 0.5 * screenWidth;
+	p2.y = (p2.y + 1.0) * 0.5 * screenHeight;
+	return p1.distanceTo(p2);
+};
+
+},{"three":4}],58:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = new function () {
@@ -51749,7 +52713,7 @@ module.exports = new function () {
 	};
 }();
 
-},{"three":4}],54:[function(require,module,exports){
+},{"three":4}],59:[function(require,module,exports){
 const updateVisibility = require('./updateVisibility');
 const context = require('../context');
 
@@ -51774,7 +52738,7 @@ module.exports = function (pointclouds, camera, renderer) {
 	return result;
 };
 
-},{"../context":11,"./updateVisibility":55}],55:[function(require,module,exports){
+},{"../context":12,"./updateVisibility":60}],60:[function(require,module,exports){
 const updateVisibilityStructures = require('./updateVisibilityStructures');
 const THREE = require('three');
 const context = require('../context');
@@ -51972,7 +52936,7 @@ module.exports = function (pointclouds, camera, renderer) {
 	};
 };
 
-},{"../context":11,"../materials/ClipMode":20,"../tree/DEM":36,"../utils/Box3Helper":43,"./updateVisibilityStructures":56,"three":4}],56:[function(require,module,exports){
+},{"../context":12,"../materials/ClipMode":21,"../tree/DEM":37,"../utils/Box3Helper":44,"./updateVisibilityStructures":61,"three":4}],61:[function(require,module,exports){
 const BinaryHeap = require('./BinaryHeap');
 const THREE = require('three');
 
@@ -52035,7 +52999,7 @@ module.exports = function updateVisibilityStructures (pointclouds, camera, rende
 	};
 };
 
-},{"./BinaryHeap":42,"three":4}],57:[function(require,module,exports){
+},{"./BinaryHeap":43,"three":4}],62:[function(require,module,exports){
 
 module.exports = function (camera, node, factor) {
 	if (!node.geometry && !node.boundingSphere && !node.boundingBox) {
@@ -52123,13 +53087,13 @@ module.exports = function (camera, node, factor) {
 //
 // }
 
-},{}],58:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 module.exports = {
 	ORTHOGRAPHIC: 0,
 	PERSPECTIVE: 1
 };
 
-},{}],59:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 const EyeDomeLightingMaterial = require('../materials/EyeDomeLightingMaterial');
 const THREE = require('three');
 const screenPass = require('../utils/screenPass');
@@ -52230,7 +53194,7 @@ class EDLRenderer {
 			viewer.renderer.clear();
 		}
 
-		// viewer.measuringTool.update();
+		viewer.measuringTool.update();
 		// viewer.profileTool.update();
 		// viewer.transformationTool.update();
 		// viewer.volumeTool.update();
@@ -52289,7 +53253,7 @@ class EDLRenderer {
 		viewer.renderer.clearDepth();
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
 
-		// viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);
+		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);
 		// viewer.renderer.render(viewer.volumeTool.sceneVolume, camera);
 		// viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		// viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
@@ -52308,7 +53272,7 @@ class EDLRenderer {
 
 module.exports = EDLRenderer;
 
-},{"../materials/EyeDomeLightingMaterial":21,"../utils/screenPass":53,"three":4}],60:[function(require,module,exports){
+},{"../materials/EyeDomeLightingMaterial":22,"../utils/screenPass":58,"three":4}],65:[function(require,module,exports){
 const THREE = require('three');
 const context = require('../context');
 
@@ -52424,7 +53388,7 @@ class NavigationCube extends THREE.Object3D {
 
 module.exports = NavigationCube;
 
-},{"../context":11,"three":4}],61:[function(require,module,exports){
+},{"../context":12,"three":4}],66:[function(require,module,exports){
 class PotreeRenderer {
 	constructor (viewer) {
 		this.viewer = viewer;
@@ -52504,11 +53468,11 @@ class PotreeRenderer {
 
 		viewer.renderer.clearDepth();
 
-		// viewer.measuringTool.update();
+		viewer.measuringTool.update();
 		// viewer.profileTool.update();
 		// viewer.transformationTool.update();
 
-		// viewer.renderer.render(viewer.measuringTool.sceneMeasurement, activeCam);
+		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, activeCam);
 		// viewer.renderer.render(viewer.profileTool.sceneProfile, activeCam);
 		// viewer.renderer.render(viewer.transformationTool.sceneTransform, activeCam);
 
@@ -52529,7 +53493,7 @@ class PotreeRenderer {
 
 module.exports = PotreeRenderer;
 
-},{}],62:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 const THREE = require('three');
 // const Annotation = require('../Annotation');
 const View = require('./View');
@@ -52853,7 +53817,7 @@ class Scene extends THREE.EventDispatcher {
 
 module.exports = Scene;
 
-},{"../utils/createBackgroundTexture":46,"../utils/createGrid":47,"./CameraMode":58,"./View":63,"three":4}],63:[function(require,module,exports){
+},{"../utils/createBackgroundTexture":50,"../utils/createGrid":51,"./CameraMode":63,"./View":68,"three":4}],68:[function(require,module,exports){
 const THREE = require('three');
 const OrbitControls = require('../navigation/OrbitControls');
 
@@ -52972,7 +53936,7 @@ class View {
 
 module.exports = View;
 
-},{"../navigation/OrbitControls":35,"three":4}],64:[function(require,module,exports){
+},{"../navigation/OrbitControls":36,"three":4}],69:[function(require,module,exports){
 
 // let getQueryParam = function(name) {
 //    name = name.replace(/[\[\]]/g, "\\$&");
@@ -52988,7 +53952,7 @@ const TWEEN = require('@tweenjs/tween.js');
 // const ClipMode = require('../materials/ClipMode');
 const Scene = require('./Scene');
 const InputHandler = require('../navigation/InputHandler');
-// const MeasuringTool = require('../utils/MeasuringTool');
+const MeasuringTool = require('../utils/MeasuringTool');
 // const ProfileTool = require('../utils/ProfileTool');
 // const VolumeTool = require('../utils/VolumeTool');
 // const TransformationTool = require('../utils/TransformationTool');
@@ -53099,7 +54063,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 		this.inputHandler = null;
 
-		// this.measuringTool = null;
+		this.measuringTool = null;
 		// this.profileTool = null;
 		// this.volumeTool = null;
 		// this.clippingTool = null;
@@ -53119,7 +54083,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.inputHandler = new InputHandler(this);
 			this.inputHandler.setScene(this.scene);
 
-			// this.measuringTool = new MeasuringTool(this);
+			this.measuringTool = new MeasuringTool(this);
 			// this.profileTool = new ProfileTool(this);
 			// this.volumeTool = new VolumeTool(this);
 			// this.clippingTool = new ClippingTool(this);
@@ -53129,7 +54093,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 			this.createControls();
 
-			// this.measuringTool.setScene(this.scene);
+			this.measuringTool.setScene(this.scene);
 			// this.profileTool.setScene(this.scene);
 			// this.volumeTool.setScene(this.scene);
 			// this.clippingTool.setScene(this.scene);
@@ -53144,7 +54108,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 			this.addEventListener('scene_changed', (e) => {
 				this.inputHandler.setScene(e.scene);
-				// this.measuringTool.setScene(e.scene);
+				this.measuringTool.setScene(e.scene);
 				// this.profileTool.setScene(e.scene);
 				// this.volumeTool.setScene(e.scene);
 				// this.clippingTool.setScene(this.scene);
@@ -54272,7 +55236,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 module.exports = PotreeViewer;
 
-},{"../Features":5,"../context":11,"../navigation/EarthControls":32,"../navigation/FirstPersonControls":33,"../navigation/InputHandler":34,"../navigation/OrbitControls":35,"../utils/computeTransformedBoundingBox":45,"../utils/getParameterByName":50,"../utils/updatePointClouds":54,"../utils/zoomTo":57,"../webgl/GLQueries":65,"./CameraMode":58,"./EDLRenderer":59,"./NavigationCube":60,"./PotreeRenderer":61,"./Scene":62,"@tweenjs/tween.js":1,"stats.js":3,"three":4}],65:[function(require,module,exports){
+},{"../Features":5,"../context":12,"../navigation/EarthControls":33,"../navigation/FirstPersonControls":34,"../navigation/InputHandler":35,"../navigation/OrbitControls":36,"../utils/MeasuringTool":46,"../utils/computeTransformedBoundingBox":49,"../utils/getParameterByName":54,"../utils/updatePointClouds":59,"../utils/zoomTo":62,"../webgl/GLQueries":70,"./CameraMode":63,"./EDLRenderer":64,"./NavigationCube":65,"./PotreeRenderer":66,"./Scene":67,"@tweenjs/tween.js":1,"stats.js":3,"three":4}],70:[function(require,module,exports){
 const queriesPerGL = new Map();
 let cached = false;
 
@@ -54360,6 +55324,6 @@ class GLQueries {
 
 module.exports = GLQueries;
 
-},{}]},{},[12])(12)
+},{}]},{},[13])(13)
 });
 //# sourceMappingURL=potree.js.map

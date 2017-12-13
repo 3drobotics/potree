@@ -98,7 +98,7 @@ class EDLRenderer {
 			viewer.renderer.clear();
 		}
 
-		// viewer.measuringTool.update();
+		viewer.measuringTool.update();
 		// viewer.profileTool.update();
 		// viewer.transformationTool.update();
 		// viewer.volumeTool.update();
@@ -157,7 +157,7 @@ class EDLRenderer {
 		viewer.renderer.clearDepth();
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
 
-		// viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);
+		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);
 		// viewer.renderer.render(viewer.volumeTool.sceneVolume, camera);
 		// viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		// viewer.renderer.render(viewer.profileTool.sceneProfile, camera);

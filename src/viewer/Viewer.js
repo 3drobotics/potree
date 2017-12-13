@@ -13,7 +13,7 @@ const TWEEN = require('@tweenjs/tween.js');
 // const ClipMode = require('../materials/ClipMode');
 const Scene = require('./Scene');
 const InputHandler = require('../navigation/InputHandler');
-// const MeasuringTool = require('../utils/MeasuringTool');
+const MeasuringTool = require('../utils/MeasuringTool');
 // const ProfileTool = require('../utils/ProfileTool');
 // const VolumeTool = require('../utils/VolumeTool');
 // const TransformationTool = require('../utils/TransformationTool');
@@ -124,7 +124,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 		this.inputHandler = null;
 
-		// this.measuringTool = null;
+		this.measuringTool = null;
 		// this.profileTool = null;
 		// this.volumeTool = null;
 		// this.clippingTool = null;
@@ -144,7 +144,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.inputHandler = new InputHandler(this);
 			this.inputHandler.setScene(this.scene);
 
-			// this.measuringTool = new MeasuringTool(this);
+			this.measuringTool = new MeasuringTool(this);
 			// this.profileTool = new ProfileTool(this);
 			// this.volumeTool = new VolumeTool(this);
 			// this.clippingTool = new ClippingTool(this);
@@ -154,7 +154,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 			this.createControls();
 
-			// this.measuringTool.setScene(this.scene);
+			this.measuringTool.setScene(this.scene);
 			// this.profileTool.setScene(this.scene);
 			// this.volumeTool.setScene(this.scene);
 			// this.clippingTool.setScene(this.scene);
@@ -169,7 +169,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 			this.addEventListener('scene_changed', (e) => {
 				this.inputHandler.setScene(e.scene);
-				// this.measuringTool.setScene(e.scene);
+				this.measuringTool.setScene(e.scene);
 				// this.profileTool.setScene(e.scene);
 				// this.volumeTool.setScene(e.scene);
 				// this.clippingTool.setScene(this.scene);

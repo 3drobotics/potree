@@ -77,11 +77,11 @@ class PotreeRenderer {
 
 		viewer.renderer.clearDepth();
 
-		// viewer.measuringTool.update();
+		viewer.measuringTool.update();
 		// viewer.profileTool.update();
 		// viewer.transformationTool.update();
 
-		// viewer.renderer.render(viewer.measuringTool.sceneMeasurement, activeCam);
+		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, activeCam);
 		// viewer.renderer.render(viewer.profileTool.sceneProfile, activeCam);
 		// viewer.renderer.render(viewer.transformationTool.sceneTransform, activeCam);
 
