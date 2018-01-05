@@ -51621,6 +51621,7 @@ const getMousePointCloudIntersection = require('./getMousePointCloudIntersection
 const addCommas = require('./addCommas');
 
 const M_TO_FEET = 3.28084;
+const M_TO_SURVEY_FEET = 3937 / 1200;
 const M_TO_INCH = 39.37008;
 
 class Measure extends THREE.Object3D {
@@ -51930,11 +51931,20 @@ class Measure extends THREE.Object3D {
 				return val;
 			case 'ft':
 				return val * Math.pow(M_TO_FEET, power);
+			case 'foot_survey_us':
+				return val * Math.pow(M_TO_SURVEY_FEET, power);
 			case '″':
 				return val * Math.pow(M_TO_INCH, power);
 			default:
 				return val;
 		}
+	}
+
+	formatLabel (val) {
+		if (val === 'foot_survey_us') {
+			return 'ft';
+		}
+		return val;
 	}
 
 	update () {
@@ -51954,7 +51964,7 @@ class Measure extends THREE.Object3D {
 				/* let msg = addCommas(position.x.toFixed(2))
 					+ " / " + addCommas(position.y.toFixed(2))
 					+ " / " + addCommas(position.z.toFixed(2)); */
-				let msg = addCommas(this.getUnitValue(position.z).toFixed(2) + ' ' + this.lengthUnit.code);
+				let msg = addCommas(this.getUnitValue(position.z).toFixed(2) + ' ' + this.formatLabel(this.lengthUnit.code));
 				coordinateLabel.setText(msg);
 
 				coordinateLabel.visible = this.showCoordinates;
@@ -52011,7 +52021,7 @@ class Measure extends THREE.Object3D {
 				let distance = point.position.distanceTo(nextPoint.position);
 
 				edgeLabel.position.copy(center);
-				edgeLabel.setText(addCommas(this.getUnitValue(distance).toFixed(2)) + ' ' + this.lengthUnit.code);
+				edgeLabel.setText(addCommas(this.getUnitValue(distance).toFixed(2)) + ' ' + this.formatLabel(this.lengthUnit.code));
 				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
 			}
 
@@ -52045,7 +52055,7 @@ class Measure extends THREE.Object3D {
 					+ " / " + addCommas(point.position.y.toFixed(2))
 					+ " / " + addCommas(point.position.z.toFixed(2)); */
 
-				let msg = addCommas(point.position.z.toFixed(2) + ' ' + this.lengthUnit.code);
+				let msg = addCommas(point.position.z.toFixed(2) + ' ' + this.formatLabel(this.lengthUnit.code));
 				coordinateLabel.setText(msg);
 
 				// coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
@@ -52086,7 +52096,7 @@ class Measure extends THREE.Object3D {
 
 				let heightLabelPosition = start.clone().add(end).multiplyScalar(0.5);
 				this.heightLabel.position.copy(heightLabelPosition);
-				let msg = addCommas(this.getUnitValue(height).toFixed(2)) + ' ' + this.lengthUnit.code;
+				let msg = addCommas(this.getUnitValue(height).toFixed(2)) + ' ' + this.formatLabel(this.lengthUnit.code);
 				this.heightLabel.setText(msg);
 			}
 		}
@@ -52094,7 +52104,7 @@ class Measure extends THREE.Object3D {
 		{ // update area label
 			this.areaLabel.position.copy(centroid);
 			this.areaLabel.visible = this.showArea && this.points.length >= 3;
-			let msg = addCommas(this.getArea().toFixed(1)) + ' ' + this.lengthUnit.code + '\u00B2';
+			let msg = addCommas(this.getArea().toFixed(1)) + ' ' + this.formatLabel(this.lengthUnit.code) + '\u00B2';
 			this.areaLabel.setText(msg);
 		}
 	};
@@ -54058,6 +54068,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.LENGTH_UNITS = {
 			METER: {code: 'm'},
 			FEET: {code: 'ft'},
+			SURVEY_FEET: {code: 'foot_survey_us'},
 			INCH: {code: '\u2033'}
 		};
 		this.lengthUnit = this.LENGTH_UNITS.METER;
@@ -54416,6 +54427,9 @@ class PotreeViewer extends THREE.EventDispatcher {
 				break;
 			case 'in':
 				this.lengthUnit = this.LENGTH_UNITS.INCH;
+				break;
+			case 'foot_survey_us':
+				this.lengthUnit = this.LENGTH_UNITS.SURVEY_FEET;
 				break;
 		}
 
