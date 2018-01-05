@@ -323,6 +323,13 @@ class Measure extends THREE.Object3D {
 		}
 	}
 
+	formatLabel (val) {
+		if (val === 'foot_survey_us') {
+			return 'ft';
+		}
+		return val;
+	}
+
 	update () {
 		if (this.points.length === 0) {
 			return;
@@ -340,7 +347,7 @@ class Measure extends THREE.Object3D {
 				/* let msg = addCommas(position.x.toFixed(2))
 					+ " / " + addCommas(position.y.toFixed(2))
 					+ " / " + addCommas(position.z.toFixed(2)); */
-				let msg = addCommas(this.getUnitValue(position.z).toFixed(2) + ' ' + this.lengthUnit.code);
+				let msg = addCommas(this.getUnitValue(position.z).toFixed(2) + ' ' + this.formatLabel(this.lengthUnit.code));
 				coordinateLabel.setText(msg);
 
 				coordinateLabel.visible = this.showCoordinates;
@@ -397,7 +404,7 @@ class Measure extends THREE.Object3D {
 				let distance = point.position.distanceTo(nextPoint.position);
 
 				edgeLabel.position.copy(center);
-				edgeLabel.setText(addCommas(this.getUnitValue(distance).toFixed(2)) + ' ' + this.lengthUnit.code);
+				edgeLabel.setText(addCommas(this.getUnitValue(distance).toFixed(2)) + ' ' + this.formatLabel(this.lengthUnit.code));
 				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
 			}
 
@@ -431,7 +438,7 @@ class Measure extends THREE.Object3D {
 					+ " / " + addCommas(point.position.y.toFixed(2))
 					+ " / " + addCommas(point.position.z.toFixed(2)); */
 
-				let msg = addCommas(point.position.z.toFixed(2) + ' ' + this.lengthUnit.code);
+				let msg = addCommas(point.position.z.toFixed(2) + ' ' + this.formatLabel(this.lengthUnit.code));
 				coordinateLabel.setText(msg);
 
 				// coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
@@ -472,7 +479,7 @@ class Measure extends THREE.Object3D {
 
 				let heightLabelPosition = start.clone().add(end).multiplyScalar(0.5);
 				this.heightLabel.position.copy(heightLabelPosition);
-				let msg = addCommas(this.getUnitValue(height).toFixed(2)) + ' ' + this.lengthUnit.code;
+				let msg = addCommas(this.getUnitValue(height).toFixed(2)) + ' ' + this.formatLabel(this.lengthUnit.code);
 				this.heightLabel.setText(msg);
 			}
 		}
@@ -480,7 +487,7 @@ class Measure extends THREE.Object3D {
 		{ // update area label
 			this.areaLabel.position.copy(centroid);
 			this.areaLabel.visible = this.showArea && this.points.length >= 3;
-			let msg = addCommas(this.getArea().toFixed(1)) + ' ' + this.lengthUnit.code + '\u00B2';
+			let msg = addCommas(this.getArea().toFixed(1)) + ' ' + this.formatLabel(this.lengthUnit.code) + '\u00B2';
 			this.areaLabel.setText(msg);
 		}
 	};
