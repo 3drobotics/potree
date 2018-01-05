@@ -101,6 +101,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.LENGTH_UNITS = {
 			METER: {code: 'm'},
 			FEET: {code: 'ft'},
+			SURVEY_FEET: {code: 'foot_survey_us'},
 			INCH: {code: '\u2033'}
 		};
 		this.lengthUnit = this.LENGTH_UNITS.METER;
@@ -459,6 +460,9 @@ class PotreeViewer extends THREE.EventDispatcher {
 				break;
 			case 'in':
 				this.lengthUnit = this.LENGTH_UNITS.INCH;
+				break;
+			case 'foot_survey_us':
+				this.lengthUnit = this.LENGTH_UNITS.SURVEY_FEET;
 				break;
 		}
 

@@ -51621,6 +51621,7 @@ const getMousePointCloudIntersection = require('./getMousePointCloudIntersection
 const addCommas = require('./addCommas');
 
 const M_TO_FEET = 3.28084;
+const M_TO_SURVEY_FEET = 3937 / 1200;
 const M_TO_INCH = 39.37008;
 
 class Measure extends THREE.Object3D {
@@ -51930,6 +51931,8 @@ class Measure extends THREE.Object3D {
 				return val;
 			case 'ft':
 				return val * Math.pow(M_TO_FEET, power);
+			case 'foot_survey_us':
+				return val * Math.pow(M_TO_SURVEY_FEET, power);
 			case '″':
 				return val * Math.pow(M_TO_INCH, power);
 			default:
@@ -54058,6 +54061,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.LENGTH_UNITS = {
 			METER: {code: 'm'},
 			FEET: {code: 'ft'},
+			SURVEY_FEET: {code: 'foot_survey_us'},
 			INCH: {code: '\u2033'}
 		};
 		this.lengthUnit = this.LENGTH_UNITS.METER;
@@ -54416,6 +54420,9 @@ class PotreeViewer extends THREE.EventDispatcher {
 				break;
 			case 'in':
 				this.lengthUnit = this.LENGTH_UNITS.INCH;
+				break;
+			case 'foot_survey_us':
+				this.lengthUnit = this.LENGTH_UNITS.SURVEY_FEET;
 				break;
 		}
 

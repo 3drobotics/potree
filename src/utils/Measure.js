@@ -4,6 +4,7 @@ const getMousePointCloudIntersection = require('./getMousePointCloudIntersection
 const addCommas = require('./addCommas');
 
 const M_TO_FEET = 3.28084;
+const M_TO_SURVEY_FEET = 3937 / 1200;
 const M_TO_INCH = 39.37008;
 
 class Measure extends THREE.Object3D {
@@ -313,6 +314,8 @@ class Measure extends THREE.Object3D {
 				return val;
 			case 'ft':
 				return val * Math.pow(M_TO_FEET, power);
+			case 'foot_survey_us':
+				return val * Math.pow(M_TO_SURVEY_FEET, power);
 			case '″':
 				return val * Math.pow(M_TO_INCH, power);
 			default:
