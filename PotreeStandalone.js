@@ -59767,7 +59767,7 @@ class EDLRenderer {
 		}
 
 		viewer.measuringTool.update();
-		// viewer.profileTool.update();
+		viewer.profileTool.update();
 		// viewer.transformationTool.update();
 		// viewer.volumeTool.update();
 
@@ -59828,7 +59828,7 @@ class EDLRenderer {
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);
 		// viewer.renderer.render(viewer.volumeTool.sceneVolume, camera);
 		// viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
-		// viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
+		viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
 		// viewer.renderer.render(viewer.transformationTool.sceneTransform, camera);
 
 		viewer.renderer.setViewport(
@@ -60041,11 +60041,11 @@ class PotreeRenderer {
 		viewer.renderer.clearDepth();
 
 		viewer.measuringTool.update();
-		// viewer.profileTool.update();
+		viewer.profileTool.update();
 		// viewer.transformationTool.update();
 
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, activeCam);
-		// viewer.renderer.render(viewer.profileTool.sceneProfile, activeCam);
+		viewer.renderer.render(viewer.profileTool.sceneProfile, activeCam);
 		// viewer.renderer.render(viewer.transformationTool.sceneTransform, activeCam);
 
 		viewer.renderer.setViewport(
