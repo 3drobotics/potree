@@ -14,13 +14,13 @@ const TWEEN = require('@tweenjs/tween.js');
 const Scene = require('./Scene');
 const InputHandler = require('../navigation/InputHandler');
 const MeasuringTool = require('../utils/MeasuringTool');
-// const ProfileTool = require('../utils/ProfileTool');
+const ProfileTool = require('../utils/ProfileTool');
 // const VolumeTool = require('../utils/VolumeTool');
 // const TransformationTool = require('../utils/TransformationTool');
 const FirstPersonControls = require('../navigation/FirstPersonControls');
 // const MapView = require('./MapView');
-// const ProfileWindowController = require('../ProfileWindowController');
-// const ProfileWindow = require('../ProfileWindow');
+const ProfileWindowController = require('../ProfileWindowController');
+const ProfileWindow = require('../ProfileWindow');
 // const PointColorType = require('../materials/PointColorType');
 const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
 const getParameterByName = require('../utils/getParameterByName');
@@ -126,7 +126,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.inputHandler = null;
 
 		this.measuringTool = null;
-		// this.profileTool = null;
+		this.profileTool = null;
 		// this.volumeTool = null;
 		// this.clippingTool = null;
 		// this.transformationTool = null;
@@ -141,12 +141,14 @@ class PotreeViewer extends THREE.EventDispatcher {
 		let scene = new Scene(this.renderer);
 		this.setScene(scene);
 
+		this.profileWindow = new ProfileWindow(this);
+		this.profileWindowController = new ProfileWindowController(this);
 		{
 			this.inputHandler = new InputHandler(this);
 			this.inputHandler.setScene(this.scene);
 
 			this.measuringTool = new MeasuringTool(this);
-			// this.profileTool = new ProfileTool(this);
+			this.profileTool = new ProfileTool(this);
 			// this.volumeTool = new VolumeTool(this);
 			// this.clippingTool = new ClippingTool(this);
 			// this.transformationTool = new TransformationTool(this);
@@ -156,7 +158,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.createControls();
 
 			this.measuringTool.setScene(this.scene);
-			// this.profileTool.setScene(this.scene);
+			this.profileTool.setScene(this.scene);
 			// this.volumeTool.setScene(this.scene);
 			// this.clippingTool.setScene(this.scene);
 
@@ -171,7 +173,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.addEventListener('scene_changed', (e) => {
 				this.inputHandler.setScene(e.scene);
 				this.measuringTool.setScene(e.scene);
-				// this.profileTool.setScene(e.scene);
+				this.profileTool.setScene(e.scene);
 				// this.volumeTool.setScene(e.scene);
 				// this.clippingTool.setScene(this.scene);
 
