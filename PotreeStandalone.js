@@ -50909,7 +50909,7 @@ LRU.prototype.disposeDescendants = function (node) {
 
 module.exports = LRU;
 
-},{"./LRUItem":17,"./context":25}],17:[function(require,module,exports){
+},{"./LRUItem":17,"./context":27}],17:[function(require,module,exports){
 /**
  *
  * @param node
@@ -51180,7 +51180,7 @@ Object.assign(PointCloudOctreeGeometryNode.prototype, THREE.EventDispatcher.prot
 
 module.exports = PointCloudOctreeGeometryNode;
 
-},{"./loader/POCLoader":28,"./tree/PointCloudTreeNode":55,"three":14}],20:[function(require,module,exports){
+},{"./loader/POCLoader":30,"./tree/PointCloudTreeNode":57,"three":14}],20:[function(require,module,exports){
 const THREE = require('three');
 
 class Points {
@@ -51233,6 +51233,274 @@ class Points {
 module.exports = Points;
 
 },{"three":14}],21:[function(require,module,exports){
+const THREE = require('three');
+const Points = require('./Points');
+
+class ProfileData {
+	constructor (profile) {
+		this.profile = profile;
+
+		this.segments = [];
+		this.boundingBox = new THREE.Box3();
+
+		for (let i = 0; i < profile.points.length - 1; i++) {
+			let start = profile.points[i];
+			let end = profile.points[i + 1];
+
+			let startGround = new THREE.Vector3(start.x, start.y, 0);
+			let endGround = new THREE.Vector3(end.x, end.y, 0);
+
+			let center = new THREE.Vector3().addVectors(endGround, startGround).multiplyScalar(0.5);
+			let length = startGround.distanceTo(endGround);
+			let side = new THREE.Vector3().subVectors(endGround, startGround).normalize();
+			let up = new THREE.Vector3(0, 0, 1);
+			let forward = new THREE.Vector3().crossVectors(side, up).normalize();
+			let N = forward;
+			let cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, startGround);
+			let halfPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(side, center);
+
+			let segment = {
+				start: start,
+				end: end,
+				cutPlane: cutPlane,
+				halfPlane: halfPlane,
+				length: length,
+				points: new Points()
+			};
+
+			this.segments.push(segment);
+		}
+	}
+
+	size () {
+		let size = 0;
+		for (let segment of this.segments) {
+			size += segment.points.numPoints;
+		}
+
+		return size;
+	}
+};
+
+module.exports = ProfileData;
+
+},{"./Points":20,"three":14}],22:[function(require,module,exports){
+const ProfileData = require('./ProfileData');
+const context = require('./context');
+const Points = require('./Points');
+const BinaryHeap = require('./utils/BinaryHeap');
+const THREE = require('three');
+
+class ProfileRequest {
+	constructor (pointcloud, profile, maxDepth, callback) {
+		this.pointcloud = pointcloud;
+		this.profile = profile;
+		this.maxDepth = maxDepth || Number.MAX_VALUE;
+		this.callback = callback;
+		this.temporaryResult = new ProfileData(this.profile);
+		this.pointsServed = 0;
+		this.highestLevelServed = 0;
+
+		this.priorityQueue = new BinaryHeap(function (x) { return 1 / x.weight; });
+
+		this.initialize();
+	}
+
+	initialize () {
+		this.priorityQueue.push({node: this.pointcloud.pcoGeometry.root, weight: 1});
+		this.traverse(this.pointcloud.pcoGeometry.root);
+	};
+
+	// traverse the node and add intersecting descendants to queue
+	traverse (node) {
+		let stack = [];
+		for (let i = 0; i < 8; i++) {
+			let child = node.children[i];
+			if (child && this.pointcloud.nodeIntersectsProfile(child, this.profile)) {
+				stack.push(child);
+			}
+		}
+
+		while (stack.length > 0) {
+			let node = stack.pop();
+			let weight = node.boundingSphere.radius;
+
+			this.priorityQueue.push({node: node, weight: weight});
+
+			// add children that intersect the cutting plane
+			if (node.level < this.maxDepth) {
+				for (let i = 0; i < 8; i++) {
+					let child = node.children[i];
+					if (child && this.pointcloud.nodeIntersectsProfile(child, this.profile)) {
+						stack.push(child);
+					}
+				}
+			}
+		}
+	}
+
+	update () {
+		// load nodes in queue
+		// if hierarchy expands, also load nodes from expanded hierarchy
+		// once loaded, add data to this.points and remove node from queue
+		// only evaluate 1-50 nodes per frame to maintain responsiveness
+
+		let maxNodesPerUpdate = 1;
+		let intersectedNodes = [];
+
+		for (let i = 0; i < Math.min(maxNodesPerUpdate, this.priorityQueue.size()); i++) {
+			let element = this.priorityQueue.pop();
+			let node = element.node;
+
+			if (node.loaded) {
+				// add points to result
+				intersectedNodes.push(node);
+				context.getLRU().touch(node);
+				this.highestLevelServed = node.getLevel();
+
+				if ((node.level % node.pcoGeometry.hierarchyStepSize) === 0 && node.hasChildren) {
+					this.traverse(node);
+				}
+			} else {
+				node.load();
+				this.priorityQueue.push(element);
+			}
+		}
+
+		if (intersectedNodes.length > 0) {
+			this.getPointsInsideProfile(intersectedNodes, this.temporaryResult);
+			if (this.temporaryResult.size() > 100) {
+				this.pointsServed += this.temporaryResult.size();
+				this.callback.onProgress({request: this, points: this.temporaryResult});
+				this.temporaryResult = new ProfileData(this.profile);
+			}
+		}
+
+		if (this.priorityQueue.size() === 0) {
+			// we're done! inform callback and remove from pending requests
+
+			if (this.temporaryResult.size() > 0) {
+				this.pointsServed += this.temporaryResult.size();
+				this.callback.onProgress({request: this, points: this.temporaryResult});
+				this.temporaryResult = new ProfileData(this.profile);
+			}
+
+			this.callback.onFinish({request: this});
+
+			let index = this.pointcloud.profileRequests.indexOf(this);
+			if (index >= 0) {
+				this.pointcloud.profileRequests.splice(index, 1);
+			}
+		}
+	};
+
+	getPointsInsideProfile (nodes, target) {
+		let totalMileage = 0;
+
+		for (let segment of target.segments) {
+			for (let node of nodes) {
+				let geometry = node.geometry;
+				let positions = geometry.attributes.position;
+				let p = positions.array;
+				let numPoints = node.numPoints;
+
+				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
+				let segmentDir = sv.clone().normalize();
+
+				let accepted = [];
+				let mileage = [];
+				let acceptedPositions = [];
+				let points = new Points();
+
+				let nodeMatrix = new THREE.Matrix4().makeTranslation(...node.boundingBox.min.toArray());
+
+				let matrix = new THREE.Matrix4().multiplyMatrices(
+					this.pointcloud.matrixWorld, nodeMatrix);
+
+				for (let i = 0; i < numPoints; i++) {
+					let pos = new THREE.Vector3(p[3 * i], p[3 * i + 1], p[3 * i + 2]);
+					pos.applyMatrix4(matrix);
+					let distance = Math.abs(segment.cutPlane.distanceToPoint(pos));
+					let centerDistance = Math.abs(segment.halfPlane.distanceToPoint(pos));
+
+					if (distance < this.profile.width / 2 && centerDistance < segment.length / 2) {
+						let svp = new THREE.Vector3().subVectors(pos, segment.start);
+						let localMileage = segmentDir.dot(svp);
+
+						accepted.push(i);
+						mileage.push(localMileage + totalMileage);
+						points.boundingBox.expandByPoint(pos);
+
+						acceptedPositions.push(pos.x);
+						acceptedPositions.push(pos.y);
+						acceptedPositions.push(pos.z);
+					}
+				}
+
+				for (let attribute of Object.keys(geometry.attributes).filter(a => a !== 'indices')) {
+					let bufferedAttribute = geometry.attributes[attribute];
+					let Type = bufferedAttribute.array.constructor;
+
+					let filteredBuffer = null;
+
+					if (attribute === 'position') {
+						filteredBuffer = new Type(acceptedPositions);
+					} else {
+						filteredBuffer = new Type(accepted.length * bufferedAttribute.itemSize);
+
+						for (let i = 0; i < accepted.length; i++) {
+							let index = accepted[i];
+
+							filteredBuffer.set(
+								bufferedAttribute.array.subarray(
+									bufferedAttribute.itemSize * index,
+									bufferedAttribute.itemSize * index + bufferedAttribute.itemSize),
+								bufferedAttribute.itemSize * i);
+						}
+					}
+					points.data[attribute] = filteredBuffer;
+				}
+
+				points.data['mileage'] = new Float64Array(mileage);
+				points.numPoints = accepted.length;
+
+				segment.points.add(points);
+			}
+
+			totalMileage += segment.length;
+		}
+
+		for (let segment of target.segments) {
+			target.boundingBox.union(segment.points.boundingBox);
+		}
+	};
+
+	finishLevelThenCancel () {
+		if (this.cancelRequested) {
+			return;
+		}
+
+		this.maxDepth = this.highestLevelServed + 1;
+		this.cancelRequested = true;
+
+		console.log(`maxDepth: ${this.maxDepth}`);
+	};
+
+	cancel () {
+		this.callback.onCancel();
+
+		this.priorityQueue = new BinaryHeap(function (x) { return 1 / x.weight; });
+
+		let index = this.pointcloud.profileRequests.indexOf(this);
+		if (index >= 0) {
+			this.pointcloud.profileRequests.splice(index, 1);
+		}
+	};
+};
+
+module.exports = ProfileRequest;
+
+},{"./Points":20,"./ProfileData":21,"./context":27,"./utils/BinaryHeap":58,"three":14}],23:[function(require,module,exports){
 // const $ = require('./jquery');
 const THREE = require('three');
 const d3Selection = require('d3-selection');
@@ -51375,12 +51643,12 @@ class ProfileWindow extends THREE.EventDispatcher {
 				let point = this.selectPoint(mileage, elevation, radius);
 
 				if (point) {
-					this.elRoot.find('#profileSelectionProperties').fadeIn(200);
+					document.getElementById('profileSelectionProperties').fadeIn(200);
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
 					this.pickSphere.position.set(point.mileage, point.position[2], 0);
 
-					let info = this.elRoot.find('#profileSelectionProperties');
+					let info = document.getElementById('profileSelectionProperties');
 					let html = '<table>';
 					for (let attribute of Object.keys(point)) {
 						let value = point[attribute];
@@ -51735,7 +52003,6 @@ class ProfileWindow extends THREE.EventDispatcher {
 		let numPoints = 0;
 		for (let entry of this.pointclouds.entries()) {
 			numPoints += entry[1].points.numPoints;
-
 			document.getElementById('profile_num_points').innerHTML = addCommas(numPoints);
 			// $(`#profile_num_points`).html(addCommas(numPoints));
 		}
@@ -51771,7 +52038,8 @@ class ProfileWindow extends THREE.EventDispatcher {
 			.filter(c => c instanceof THREE.Points)
 			.forEach(c => this.scene.remove(c));
 
-		this.elRoot.find('#profileSelectionProperties').hide();
+		// KTODO: check if needed
+		// document.getElementById('profileSelectionProperties').hide();
 
 		this.render();
 	}
@@ -51865,7 +52133,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 module.exports = ProfileWindow;
 
-},{"./Points":20,"./context":25,"./materials/PointCloudMaterial":37,"./utils/addCommas":63,"d3-axis":3,"d3-scale":8,"d3-selection":9,"three":14}],22:[function(require,module,exports){
+},{"./Points":20,"./context":27,"./materials/PointCloudMaterial":39,"./utils/addCommas":65,"d3-axis":3,"d3-scale":8,"d3-selection":9,"three":14}],24:[function(require,module,exports){
 class ProfileWindowController {
 	constructor (viewer) {
 		this.viewer = viewer;
@@ -51976,7 +52244,7 @@ class ProfileWindowController {
 
 module.exports = ProfileWindowController;
 
-},{}],23:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 /**
  * adapted from http://stemkoski.github.io/Three.js/Sprite-Text-Labels.html
  */
@@ -52106,7 +52374,7 @@ TextSprite.prototype.roundRect = function (ctx, x, y, w, h, r) {
 
 module.exports = TextSprite;
 
-},{"three":14}],24:[function(require,module,exports){
+},{"three":14}],26:[function(require,module,exports){
 
 const Version = function (version) {
 	this.version = version;
@@ -52148,7 +52416,7 @@ Version.prototype.upTo = function (version) {
 
 module.exports = Version;
 
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 const LRU = require('./LRU');
 
 let scriptPath = '';
@@ -52184,7 +52452,7 @@ module.exports = {
 	}
 };
 
-},{"./LRU":16}],26:[function(require,module,exports){
+},{"./LRU":16}],28:[function(require,module,exports){
 const GLQueries = require('./webgl/GLQueries');
 
 function Potree () {}
@@ -52228,7 +52496,7 @@ Potree.Measure = require('./utils/Measure');
 
 module.exports = Potree;
 
-},{"./context":25,"./loader/POCLoader":28,"./materials/PointShape":39,"./materials/PointSizeType":40,"./utils/Measure":58,"./utils/loadPointCloud":70,"./viewer/Viewer":84,"./webgl/GLQueries":85}],27:[function(require,module,exports){
+},{"./context":27,"./loader/POCLoader":30,"./materials/PointShape":41,"./materials/PointSizeType":42,"./utils/Measure":60,"./utils/loadPointCloud":72,"./viewer/Viewer":86,"./webgl/GLQueries":87}],29:[function(require,module,exports){
 const Version = require('../Version');
 const PointAttributeNames = require('./PointAttributeNames');
 const THREE = require('three');
@@ -52357,7 +52625,7 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 
 module.exports = BinaryLoader;
 
-},{"../Version":24,"../context":25,"./PointAttributeNames":30,"three":14}],28:[function(require,module,exports){
+},{"../Version":26,"../context":27,"./PointAttributeNames":32,"three":14}],30:[function(require,module,exports){
 const PointCloudOctreeGeometry = require('../PointCloudOctreeGeometry');
 const PointCloudOctreeGeometryNode = require('../PointCloudOctreeGeometryNode');
 const Version = require('../Version');
@@ -52534,7 +52802,7 @@ POCLoader.createChildAABB = function (aabb, index) {
 	return new THREE.Box3(min, max);
 };
 
-},{"../PointCloudOctreeGeometry":18,"../PointCloudOctreeGeometryNode":19,"../Version":24,"./BinaryLoader":27,"./PointAttribute":29,"./PointAttributes":32,"three":14}],29:[function(require,module,exports){
+},{"../PointCloudOctreeGeometry":18,"../PointCloudOctreeGeometryNode":19,"../Version":26,"./BinaryLoader":29,"./PointAttribute":31,"./PointAttributes":34,"three":14}],31:[function(require,module,exports){
 const PointAttributeNames = require('./PointAttributeNames');
 const PointAttributeTypes = require('./PointAttributeTypes');
 
@@ -52598,7 +52866,7 @@ PointAttribute.NORMAL = new PointAttribute(
 
 module.exports = PointAttribute;
 
-},{"./PointAttributeNames":30,"./PointAttributeTypes":31}],30:[function(require,module,exports){
+},{"./PointAttributeNames":32,"./PointAttributeTypes":33}],32:[function(require,module,exports){
 const PointAttributeNames = {};
 
 PointAttributeNames.POSITION_CARTESIAN = 0; // float x, y, z;
@@ -52615,7 +52883,7 @@ PointAttributeNames.NORMAL = 10;
 
 module.exports = PointAttributeNames;
 
-},{}],31:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 /**
  * Some types of possible point attribute data formats
  *
@@ -52642,7 +52910,7 @@ for (var obj in PointAttributeTypes) {
 
 module.exports = PointAttributeTypes;
 
-},{}],32:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 const PointAttribute = require('./PointAttribute');
 const PointAttributeNames = require('./PointAttributeNames');
 
@@ -52702,7 +52970,7 @@ PointAttributes.prototype.hasNormals = function () {
 
 module.exports = PointAttributes;
 
-},{"./PointAttribute":29,"./PointAttributeNames":30}],33:[function(require,module,exports){
+},{"./PointAttribute":31,"./PointAttributeNames":32}],35:[function(require,module,exports){
 const THREE = require('three');
 module.exports = {
 	'DEFAULT': {
@@ -52721,7 +52989,7 @@ module.exports = {
 	}
 };
 
-},{"three":14}],34:[function(require,module,exports){
+},{"three":14}],36:[function(require,module,exports){
 const ClipMode = {
 	DISABLED: 0,
 	HIGHLIGHT: 1,
@@ -52740,7 +53008,7 @@ Object.defineProperty(ClipMode, 'forCode', {
 });
 module.exports = ClipMode;
 
-},{}],35:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 const PointColorType = require('./PointColorType');
 const THREE = require('three');
 const vs = require('./shaders/edl.vs');
@@ -52839,7 +53107,7 @@ Object.defineProperty(EyeDomeLightingMaterial.prototype, 'neighbourCount', {
 
 module.exports = EyeDomeLightingMaterial;
 
-},{"./PointColorType":38,"./shaders/edl.fs":42,"./shaders/edl.vs":43,"three":14}],36:[function(require,module,exports){
+},{"./PointColorType":40,"./shaders/edl.fs":44,"./shaders/edl.vs":45,"three":14}],38:[function(require,module,exports){
 const THREE = require('three');
 module.exports = {
 	RAINBOW: [
@@ -52923,7 +53191,7 @@ module.exports = {
 	]
 };
 
-},{"three":14}],37:[function(require,module,exports){
+},{"three":14}],39:[function(require,module,exports){
 const THREE = require('three');
 const vs = require('./shaders/pointcloud.vs');
 const fs = require('./shaders/pointcloud.fs');
@@ -53849,7 +54117,7 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 };
 
-},{"../utils/generateDataTexture":67,"./Classification":33,"./Gradients":36,"./PointColorType":38,"./PointShape":39,"./PointSizeType":40,"./TreeType":41,"./shaders/pointcloud.fs":44,"./shaders/pointcloud.vs":45,"three":14}],38:[function(require,module,exports){
+},{"../utils/generateDataTexture":69,"./Classification":35,"./Gradients":38,"./PointColorType":40,"./PointShape":41,"./PointSizeType":42,"./TreeType":43,"./shaders/pointcloud.fs":46,"./shaders/pointcloud.vs":47,"three":14}],40:[function(require,module,exports){
 module.exports = {
 	RGB: 0,
 	COLOR: 1,
@@ -53870,27 +54138,27 @@ module.exports = {
 	COMPOSITE: 50
 };
 
-},{}],39:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 module.exports = {
 	SQUARE: 0,
 	CIRCLE: 1,
 	PARABOLOID: 2
 };
 
-},{}],40:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 module.exports = {
 	FIXED: 0,
 	ATTENUATED: 1,
 	ADAPTIVE: 2
 };
 
-},{}],41:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 module.exports = {
 	OCTREE:	0,
 	KDTREE:	1
 };
 
-},{}],42:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 module.exports = function parse(params){
       var template = "#define NEIGHBOUR_COUNT {{neighbourCount}} \n" +
 "// \n" +
@@ -53954,7 +54222,7 @@ module.exports = function parse(params){
       return template
     };
 
-},{}],43:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 module.exports = function parse(params){
       var template = "#define NEIGHBOUR_COUNT {{neighbourCount}} \n" +
 " \n" +
@@ -53976,7 +54244,7 @@ module.exports = function parse(params){
       return template
     };
 
-},{}],44:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 module.exports = function parse(params){
       var template = "{{defines}} \n" +
 "precision mediump float; \n" +
@@ -54257,7 +54525,7 @@ module.exports = function parse(params){
       return template
     };
 
-},{}],45:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 module.exports = function parse(params){
       var template = "{{defines}} \n" +
 "precision mediump float; \n" +
@@ -54807,7 +55075,7 @@ module.exports = function parse(params){
       return template
     };
 
-},{}],46:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 const THREE = require('three');
 const TWEEN = require('@tweenjs/tween.js');
 const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
@@ -55107,7 +55375,7 @@ class EarthControls extends THREE.EventDispatcher {
 
 module.exports = EarthControls;
 
-},{"../utils/Mouse":60,"../utils/getMousePointCloudIntersection":68,"../utils/projectedRadius":71,"@tweenjs/tween.js":1,"three":14}],47:[function(require,module,exports){
+},{"../utils/Mouse":62,"../utils/getMousePointCloudIntersection":70,"../utils/projectedRadius":73,"@tweenjs/tween.js":1,"three":14}],49:[function(require,module,exports){
 const THREE = require('three');
 const TWEEN = require('@tweenjs/tween.js');
 const MOUSE = require('../utils/Mouse');
@@ -55379,7 +55647,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
 
 module.exports = FirstPersonControls;
 
-},{"../utils/Mouse":60,"../utils/getMousePointCloudIntersection":68,"@tweenjs/tween.js":1,"three":14}],48:[function(require,module,exports){
+},{"../utils/Mouse":62,"../utils/getMousePointCloudIntersection":70,"@tweenjs/tween.js":1,"three":14}],50:[function(require,module,exports){
 const THREE = require('three');
 const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
 
@@ -56017,7 +56285,7 @@ class InputHandler extends THREE.EventDispatcher {
 
 module.exports = InputHandler;
 
-},{"../utils/getMousePointCloudIntersection":68,"three":14}],49:[function(require,module,exports){
+},{"../utils/getMousePointCloudIntersection":70,"three":14}],51:[function(require,module,exports){
 const THREE = require('three');
 const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
 const MOUSE = require('../utils/Mouse');
@@ -56289,7 +56557,7 @@ class OrbitControls extends THREE.EventDispatcher {
 
 module.exports = OrbitControls;
 
-},{"../utils/Mouse":60,"../utils/getMousePointCloudIntersection":68,"@tweenjs/tween.js":1,"three":14}],50:[function(require,module,exports){
+},{"../utils/Mouse":62,"../utils/getMousePointCloudIntersection":70,"@tweenjs/tween.js":1,"three":14}],52:[function(require,module,exports){
 const DEMNode = require('./DEMNode');
 const context = require('../context');
 
@@ -56516,7 +56784,7 @@ module.exports = class DEM {
 	}
 };
 
-},{"../context":25,"./DEMNode":51}],51:[function(require,module,exports){
+},{"../context":27,"./DEMNode":53}],53:[function(require,module,exports){
 //
 // index is in order xyzxyzxyz
 //
@@ -56654,7 +56922,7 @@ module.exports = class DEMNode {
 	}
 };
 
-},{}],52:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 const THREE = require('three');
 const PointCloudTree = require('./PointCloudTree');
 const PointCloudMaterial = require('../materials/PointCloudMaterial');
@@ -56663,7 +56931,7 @@ const PointCloudOctreeGeometryNode = require('../PointCloudOctreeGeometryNode');
 const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
 const PointSizeType = require('../materials/PointSizeType');
 const PointColorType = require('../materials/PointColorType');
-// const ProfileRequest = require('../ProfileRequest');
+const ProfileRequest = require('../ProfileRequest');
 
 class PointCloudOctree extends PointCloudTree {
 	constructor (geometry, material) {
@@ -57024,88 +57292,88 @@ class PointCloudOctree extends PointCloudTree {
 	 *
 	 *
 	 */
-	// getPointsInProfile (profile, maxDepth, callback) {
-	// 	if (callback) {
-	// 		let request = new ProfileRequest(this, profile, maxDepth, callback);
-	// 		this.profileRequests.push(request);
-	//
-	// 		return request;
-	// 	}
-	//
-	// 	let points = {
-	// 		segments: [],
-	// 		boundingBox: new THREE.Box3(),
-	// 		projectedBoundingBox: new THREE.Box2()
-	// 	};
-	//
-	// 	// evaluate segments
-	// 	for (let i = 0; i < profile.points.length - 1; i++) {
-	// 		let start = profile.points[i];
-	// 		let end = profile.points[i + 1];
-	// 		let ps = this.getProfile(start, end, profile.width, maxDepth);
-	//
-	// 		let segment = {
-	// 			start: start,
-	// 			end: end,
-	// 			points: ps,
-	// 			project: null
-	// 		};
-	//
-	// 		points.segments.push(segment);
-	//
-	// 		points.boundingBox.expandByPoint(ps.boundingBox.min);
-	// 		points.boundingBox.expandByPoint(ps.boundingBox.max);
-	// 	}
-	//
-	// 	// add projection functions to the segments
-	// 	let mileage = new THREE.Vector3();
-	// 	for (let i = 0; i < points.segments.length; i++) {
-	// 		let segment = points.segments[i];
-	// 		let start = segment.start;
-	// 		let end = segment.end;
-	//
-	// 		let project = (function (_start, _end, _mileage, _boundingBox) {
-	// 			let start = _start;
-	// 			let end = _end;
-	// 			let mileage = _mileage;
-	// 			let boundingBox = _boundingBox;
-	//
-	// 			let xAxis = new THREE.Vector3(1, 0, 0);
-	// 			let dir = new THREE.Vector3().subVectors(end, start);
-	// 			dir.y = 0;
-	// 			dir.normalize();
-	// 			let alpha = Math.acos(xAxis.dot(dir));
-	// 			if (dir.z > 0) {
-	// 				alpha = -alpha;
-	// 			}
-	//
-	// 			return function (position) {
-	// 				let toOrigin = new THREE.Matrix4().makeTranslation(-start.x, -boundingBox.min.y, -start.z);
-	// 				let alignWithX = new THREE.Matrix4().makeRotationY(-alpha);
-	// 				let applyMileage = new THREE.Matrix4().makeTranslation(mileage.x, 0, 0);
-	//
-	// 				let pos = position.clone();
-	// 				pos.applyMatrix4(toOrigin);
-	// 				pos.applyMatrix4(alignWithX);
-	// 				pos.applyMatrix4(applyMileage);
-	//
-	// 				return pos;
-	// 			};
-	// 		}(start, end, mileage.clone(), points.boundingBox.clone()));
-	//
-	// 		segment.project = project;
-	//
-	// 		mileage.x += new THREE.Vector3(start.x, 0, start.z).distanceTo(new THREE.Vector3(end.x, 0, end.z));
-	// 		mileage.y += end.y - start.y;
-	// 	}
-	//
-	// 	points.projectedBoundingBox.min.x = 0;
-	// 	points.projectedBoundingBox.min.y = points.boundingBox.min.y;
-	// 	points.projectedBoundingBox.max.x = mileage.x;
-	// 	points.projectedBoundingBox.max.y = points.boundingBox.max.y;
-	//
-	// 	return points;
-	// }
+	getPointsInProfile (profile, maxDepth, callback) {
+		if (callback) {
+			let request = new ProfileRequest(this, profile, maxDepth, callback);
+			this.profileRequests.push(request);
+	
+			return request;
+		}
+	
+		let points = {
+			segments: [],
+			boundingBox: new THREE.Box3(),
+			projectedBoundingBox: new THREE.Box2()
+		};
+	
+		// evaluate segments
+		for (let i = 0; i < profile.points.length - 1; i++) {
+			let start = profile.points[i];
+			let end = profile.points[i + 1];
+			let ps = this.getProfile(start, end, profile.width, maxDepth);
+	
+			let segment = {
+				start: start,
+				end: end,
+				points: ps,
+				project: null
+			};
+	
+			points.segments.push(segment);
+	
+			points.boundingBox.expandByPoint(ps.boundingBox.min);
+			points.boundingBox.expandByPoint(ps.boundingBox.max);
+		}
+	
+		// add projection functions to the segments
+		let mileage = new THREE.Vector3();
+		for (let i = 0; i < points.segments.length; i++) {
+			let segment = points.segments[i];
+			let start = segment.start;
+			let end = segment.end;
+	
+			let project = (function (_start, _end, _mileage, _boundingBox) {
+				let start = _start;
+				let end = _end;
+				let mileage = _mileage;
+				let boundingBox = _boundingBox;
+	
+				let xAxis = new THREE.Vector3(1, 0, 0);
+				let dir = new THREE.Vector3().subVectors(end, start);
+				dir.y = 0;
+				dir.normalize();
+				let alpha = Math.acos(xAxis.dot(dir));
+				if (dir.z > 0) {
+					alpha = -alpha;
+				}
+	
+				return function (position) {
+					let toOrigin = new THREE.Matrix4().makeTranslation(-start.x, -boundingBox.min.y, -start.z);
+					let alignWithX = new THREE.Matrix4().makeRotationY(-alpha);
+					let applyMileage = new THREE.Matrix4().makeTranslation(mileage.x, 0, 0);
+	
+					let pos = position.clone();
+					pos.applyMatrix4(toOrigin);
+					pos.applyMatrix4(alignWithX);
+					pos.applyMatrix4(applyMileage);
+	
+					return pos;
+				};
+			}(start, end, mileage.clone(), points.boundingBox.clone()));
+	
+			segment.project = project;
+	
+			mileage.x += new THREE.Vector3(start.x, 0, start.z).distanceTo(new THREE.Vector3(end.x, 0, end.z));
+			mileage.y += end.y - start.y;
+		}
+	
+		points.projectedBoundingBox.min.x = 0;
+		points.projectedBoundingBox.min.y = points.boundingBox.min.y;
+		points.projectedBoundingBox.max.x = mileage.x;
+		points.projectedBoundingBox.max.y = points.boundingBox.max.y;
+	
+		return points;
+	}
 
 	/**
 	 * returns points inside the given profile bounds.
@@ -57118,10 +57386,10 @@ class PointCloudOctree extends PointCloudTree {
 	 *
 	 *
 	 */
-	// getProfile (start, end, width, depth, callback) {
-	// 	let request = new ProfileRequest(start, end, width, depth, callback);
-	// 	this.profileRequests.push(request);
-	// };
+	getProfile (start, end, width, depth, callback) {
+		let request = new ProfileRequest(start, end, width, depth, callback);
+		this.profileRequests.push(request);
+	};
 
 	getVisibleExtent () {
 		return this.visibleBounds.applyMatrix4(this.matrixWorld);
@@ -57429,7 +57697,7 @@ class PointCloudOctree extends PointCloudTree {
 
 module.exports = PointCloudOctree;
 
-},{"../PointCloudOctreeGeometryNode":19,"../materials/PointCloudMaterial":37,"../materials/PointColorType":38,"../materials/PointSizeType":40,"../utils/computeTransformedBoundingBox":64,"./PointCloudOctreeNode":53,"./PointCloudTree":54,"three":14}],53:[function(require,module,exports){
+},{"../PointCloudOctreeGeometryNode":19,"../ProfileRequest":22,"../materials/PointCloudMaterial":39,"../materials/PointColorType":40,"../materials/PointSizeType":42,"../utils/computeTransformedBoundingBox":66,"./PointCloudOctreeNode":55,"./PointCloudTree":56,"three":14}],55:[function(require,module,exports){
 const PointCloudTreeNode = require('./PointCloudTreeNode');
 
 class PointCloudOctreeNode extends PointCloudTreeNode {
@@ -57489,7 +57757,7 @@ class PointCloudOctreeNode extends PointCloudTreeNode {
 PointCloudOctreeNode.prototype = Object.create(PointCloudTreeNode.prototype);
 module.exports = PointCloudOctreeNode;
 
-},{"./PointCloudTreeNode":55}],54:[function(require,module,exports){
+},{"./PointCloudTreeNode":57}],56:[function(require,module,exports){
 const DEM = require('./DEM');
 const THREE = require('three');
 
@@ -57505,7 +57773,7 @@ module.exports = class PointCloudTree extends THREE.Object3D {
 	}
 };
 
-},{"./DEM":50,"three":14}],55:[function(require,module,exports){
+},{"./DEM":52,"three":14}],57:[function(require,module,exports){
 module.exports = class {
 	getChildren () {
 		throw new Error('override function');
@@ -57536,7 +57804,7 @@ module.exports = class {
 	}
 };
 
-},{}],56:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 /*
 ** Binary Heap implementation in Javascript
 ** From: http://eloquentjavascript.net/1st_edition/appendix2.htmlt
@@ -57661,7 +57929,7 @@ BinaryHeap.prototype = {
 
 module.exports = BinaryHeap;
 
-},{}],57:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 const THREE = require('three');
 
 /**
@@ -57702,7 +57970,7 @@ class Box3Helper extends THREE.LineSegments {
 
 module.exports = Box3Helper;
 
-},{"three":14}],58:[function(require,module,exports){
+},{"three":14}],60:[function(require,module,exports){
 const THREE = require('three');
 const TextSprite = require('../TextSprite');
 const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
@@ -58272,7 +58540,7 @@ class Measure extends THREE.Object3D {
 
 module.exports = Measure;
 
-},{"../TextSprite":23,"./addCommas":63,"./getMousePointCloudIntersection":68,"three":14}],59:[function(require,module,exports){
+},{"../TextSprite":25,"./addCommas":65,"./getMousePointCloudIntersection":70,"three":14}],61:[function(require,module,exports){
 const THREE = require('three');
 const Measure = require('./Measure');
 const projectedRadius = require('./projectedRadius');
@@ -58526,14 +58794,14 @@ class MeasuringTool extends THREE.EventDispatcher {
 
 module.exports = MeasuringTool;
 
-},{"../viewer/CameraMode":78,"./Measure":58,"./projectedRadius":71,"./projectedRadiusOrtho":72,"three":14}],60:[function(require,module,exports){
+},{"../viewer/CameraMode":80,"./Measure":60,"./projectedRadius":73,"./projectedRadiusOrtho":74,"three":14}],62:[function(require,module,exports){
 module.exports = {
 	LEFT: 0b0001,
 	RIGHT: 0b0010,
 	MIDDLE: 0b0100
 };
 
-},{}],61:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 const THREE = require('three');
 const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
 
@@ -58856,7 +59124,7 @@ class Profile extends THREE.Object3D {
 
 module.exports = Profile;
 
-},{"./getMousePointCloudIntersection":68,"three":14}],62:[function(require,module,exports){
+},{"./getMousePointCloudIntersection":70,"three":14}],64:[function(require,module,exports){
 const THREE = require('three');
 // const removeEventListeners = require('./removeEventListeners');
 const Profile = require('./Profile');
@@ -58989,7 +59257,7 @@ class ProfileTool extends THREE.EventDispatcher {
 
 module.exports = ProfileTool;
 
-},{"../viewer/CameraMode":78,"./Profile":61,"./projectedRadius":71,"./projectedRadiusOrtho":72,"three":14}],63:[function(require,module,exports){
+},{"../viewer/CameraMode":80,"./Profile":63,"./projectedRadius":73,"./projectedRadiusOrtho":74,"three":14}],65:[function(require,module,exports){
 /**
  * add separators to large numbers
  *
@@ -59008,7 +59276,7 @@ module.exports = (nStr) => {
 	return x1 + x2;
 };
 
-},{}],64:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 const THREE = require('three');
 
 /**
@@ -59033,7 +59301,7 @@ module.exports = (box, transform) => {
 	return boundingBox;
 };
 
-},{"three":14}],65:[function(require,module,exports){
+},{"three":14}],67:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = (width, height) => {
@@ -59073,7 +59341,7 @@ module.exports = (width, height) => {
 	return texture;
 };
 
-},{"three":14}],66:[function(require,module,exports){
+},{"three":14}],68:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = (width, length, spacing, color) => {
@@ -59097,7 +59365,7 @@ module.exports = (width, length, spacing, color) => {
 	return line;
 };
 
-},{"three":14}],67:[function(require,module,exports){
+},{"three":14}],69:[function(require,module,exports){
 const THREE = require('three');
 
 // code taken from three.js
@@ -59123,7 +59391,7 @@ module.exports = (width, height, color) => {
 	return texture;
 };
 
-},{"three":14}],68:[function(require,module,exports){
+},{"three":14}],70:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = (mouse, camera, renderer, pointclouds) => {
@@ -59176,7 +59444,7 @@ module.exports = (mouse, camera, renderer, pointclouds) => {
 	}
 };
 
-},{"three":14}],69:[function(require,module,exports){
+},{"three":14}],71:[function(require,module,exports){
 // from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
 module.exports = (name) => {
 	name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
@@ -59185,7 +59453,7 @@ module.exports = (name) => {
 	return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, ' '));
 };
 
-},{}],70:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 /* eslint-disable standard/no-callback-literal */
 const PointCloudOctree = require('../tree/PointCloudOctree');
 // const PointCloudArena4D = require('../arena4d/PointCloudArena4D');
@@ -59236,7 +59504,7 @@ module.exports = function (path, name, callback) {
 	}
 };
 
-},{"../loader/POCLoader":28,"../tree/PointCloudOctree":52}],71:[function(require,module,exports){
+},{"../loader/POCLoader":30,"../tree/PointCloudOctree":54}],73:[function(require,module,exports){
 module.exports = (radius, fov, distance, screenHeight) => {
 	let projFactor = (1 / Math.tan(fov / 2)) / distance;
 	projFactor = projFactor * screenHeight / 2;
@@ -59244,7 +59512,7 @@ module.exports = (radius, fov, distance, screenHeight) => {
 	return radius * projFactor;
 };
 
-},{}],72:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = function (radius, proj, screenWidth, screenHeight) {
@@ -59262,7 +59530,7 @@ module.exports = function (radius, proj, screenWidth, screenHeight) {
 	return p1.distanceTo(p2);
 };
 
-},{"three":14}],73:[function(require,module,exports){
+},{"three":14}],75:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = new function () {
@@ -59285,7 +59553,7 @@ module.exports = new function () {
 	};
 }();
 
-},{"three":14}],74:[function(require,module,exports){
+},{"three":14}],76:[function(require,module,exports){
 const updateVisibility = require('./updateVisibility');
 const context = require('../context');
 
@@ -59310,7 +59578,7 @@ module.exports = function (pointclouds, camera, renderer) {
 	return result;
 };
 
-},{"../context":25,"./updateVisibility":75}],75:[function(require,module,exports){
+},{"../context":27,"./updateVisibility":77}],77:[function(require,module,exports){
 const updateVisibilityStructures = require('./updateVisibilityStructures');
 const THREE = require('three');
 const context = require('../context');
@@ -59508,7 +59776,7 @@ module.exports = function (pointclouds, camera, renderer) {
 	};
 };
 
-},{"../context":25,"../materials/ClipMode":34,"../tree/DEM":50,"../utils/Box3Helper":57,"./updateVisibilityStructures":76,"three":14}],76:[function(require,module,exports){
+},{"../context":27,"../materials/ClipMode":36,"../tree/DEM":52,"../utils/Box3Helper":59,"./updateVisibilityStructures":78,"three":14}],78:[function(require,module,exports){
 const BinaryHeap = require('./BinaryHeap');
 const THREE = require('three');
 
@@ -59571,7 +59839,7 @@ module.exports = function updateVisibilityStructures (pointclouds, camera, rende
 	};
 };
 
-},{"./BinaryHeap":56,"three":14}],77:[function(require,module,exports){
+},{"./BinaryHeap":58,"three":14}],79:[function(require,module,exports){
 
 module.exports = function (camera, node, factor) {
 	if (!node.geometry && !node.boundingSphere && !node.boundingBox) {
@@ -59659,13 +59927,13 @@ module.exports = function (camera, node, factor) {
 //
 // }
 
-},{}],78:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 module.exports = {
 	ORTHOGRAPHIC: 0,
 	PERSPECTIVE: 1
 };
 
-},{}],79:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 const EyeDomeLightingMaterial = require('../materials/EyeDomeLightingMaterial');
 const THREE = require('three');
 const screenPass = require('../utils/screenPass');
@@ -59844,7 +60112,7 @@ class EDLRenderer {
 
 module.exports = EDLRenderer;
 
-},{"../materials/EyeDomeLightingMaterial":35,"../utils/screenPass":73,"three":14}],80:[function(require,module,exports){
+},{"../materials/EyeDomeLightingMaterial":37,"../utils/screenPass":75,"three":14}],82:[function(require,module,exports){
 const THREE = require('three');
 const context = require('../context');
 
@@ -59960,7 +60228,7 @@ class NavigationCube extends THREE.Object3D {
 
 module.exports = NavigationCube;
 
-},{"../context":25,"three":14}],81:[function(require,module,exports){
+},{"../context":27,"three":14}],83:[function(require,module,exports){
 class PotreeRenderer {
 	constructor (viewer) {
 		this.viewer = viewer;
@@ -60065,7 +60333,7 @@ class PotreeRenderer {
 
 module.exports = PotreeRenderer;
 
-},{}],82:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 const THREE = require('three');
 // const Annotation = require('../Annotation');
 const View = require('./View');
@@ -60389,7 +60657,7 @@ class Scene extends THREE.EventDispatcher {
 
 module.exports = Scene;
 
-},{"../utils/createBackgroundTexture":65,"../utils/createGrid":66,"./CameraMode":78,"./View":83,"three":14}],83:[function(require,module,exports){
+},{"../utils/createBackgroundTexture":67,"../utils/createGrid":68,"./CameraMode":80,"./View":85,"three":14}],85:[function(require,module,exports){
 const THREE = require('three');
 const OrbitControls = require('../navigation/OrbitControls');
 
@@ -60508,7 +60776,7 @@ class View {
 
 module.exports = View;
 
-},{"../navigation/OrbitControls":49,"three":14}],84:[function(require,module,exports){
+},{"../navigation/OrbitControls":51,"three":14}],86:[function(require,module,exports){
 
 // let getQueryParam = function(name) {
 //    name = name.replace(/[\[\]]/g, "\\$&");
@@ -61814,7 +62082,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 module.exports = PotreeViewer;
 
-},{"../Features":15,"../ProfileWindow":21,"../ProfileWindowController":22,"../context":25,"../navigation/EarthControls":46,"../navigation/FirstPersonControls":47,"../navigation/InputHandler":48,"../navigation/OrbitControls":49,"../utils/MeasuringTool":59,"../utils/ProfileTool":62,"../utils/computeTransformedBoundingBox":64,"../utils/getParameterByName":69,"../utils/updatePointClouds":74,"../utils/zoomTo":77,"../webgl/GLQueries":85,"./CameraMode":78,"./EDLRenderer":79,"./NavigationCube":80,"./PotreeRenderer":81,"./Scene":82,"@tweenjs/tween.js":1,"stats.js":13,"three":14}],85:[function(require,module,exports){
+},{"../Features":15,"../ProfileWindow":23,"../ProfileWindowController":24,"../context":27,"../navigation/EarthControls":48,"../navigation/FirstPersonControls":49,"../navigation/InputHandler":50,"../navigation/OrbitControls":51,"../utils/MeasuringTool":61,"../utils/ProfileTool":64,"../utils/computeTransformedBoundingBox":66,"../utils/getParameterByName":71,"../utils/updatePointClouds":76,"../utils/zoomTo":79,"../webgl/GLQueries":87,"./CameraMode":80,"./EDLRenderer":81,"./NavigationCube":82,"./PotreeRenderer":83,"./Scene":84,"@tweenjs/tween.js":1,"stats.js":13,"three":14}],87:[function(require,module,exports){
 const queriesPerGL = new Map();
 let cached = false;
 
@@ -61902,6 +62170,6 @@ class GLQueries {
 
 module.exports = GLQueries;
 
-},{}]},{},[26])(26)
+},{}]},{},[28])(28)
 });
 //# sourceMappingURL=potree.js.map

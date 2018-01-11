@@ -140,12 +140,12 @@ class ProfileWindow extends THREE.EventDispatcher {
 				let point = this.selectPoint(mileage, elevation, radius);
 
 				if (point) {
-					this.elRoot.find('#profileSelectionProperties').fadeIn(200);
+					document.getElementById('profileSelectionProperties').fadeIn(200);
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
 					this.pickSphere.position.set(point.mileage, point.position[2], 0);
 
-					let info = this.elRoot.find('#profileSelectionProperties');
+					let info = document.getElementById('profileSelectionProperties');
 					let html = '<table>';
 					for (let attribute of Object.keys(point)) {
 						let value = point[attribute];
@@ -500,7 +500,6 @@ class ProfileWindow extends THREE.EventDispatcher {
 		let numPoints = 0;
 		for (let entry of this.pointclouds.entries()) {
 			numPoints += entry[1].points.numPoints;
-
 			document.getElementById('profile_num_points').innerHTML = addCommas(numPoints);
 			// $(`#profile_num_points`).html(addCommas(numPoints));
 		}
@@ -536,7 +535,8 @@ class ProfileWindow extends THREE.EventDispatcher {
 			.filter(c => c instanceof THREE.Points)
 			.forEach(c => this.scene.remove(c));
 
-		this.elRoot.find('#profileSelectionProperties').hide();
+		// KTODO: check if needed
+		// document.getElementById('profileSelectionProperties').hide();
 
 		this.render();
 	}

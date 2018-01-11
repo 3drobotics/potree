@@ -38,8 +38,7 @@
 			
 			<span class="pv-main-color" style="height: 100%; width: 100%; padding: 5px; display:flex; flex-direction: column; box-sizing: border-box;">
 				<div style=" width: 100%; color: #9d9d9d; margin: 5px; display: flex; flex-direction: row; box-sizing: border-box;">
-					<span data-i18n="profile.nb_points"></span>: 
-					<span id="profile_num_points">-</span>
+					Number of Points: <span id="profile_num_points">-</span>
 					<!--<span id="profile_threshold" style="width: 300px">
 						Threshold: <span id="potree_profile_threshold_label">123</span> <div id="potree_profile_threshold_slider"></div>
 					</span>-->
@@ -102,8 +101,6 @@
 						border: 1px solid white;
 						user-select: auto;
 						">
-						position: asdsadf asdf<br>
-						rgb: 123 423 123
 						</div>
 					
 				</div>
@@ -135,11 +132,23 @@
 			//scene.view.position.set(589974.341, 231698.397, 986.146);
 			//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
 			 viewer.fitToScreen();
+			 viewer.profileWindowController.recompute();
 
 			 setTimeout(() => {
 				 console.log("START INSERTION");
 				 viewer.profileTool.startInsertion();
 			 }, 2000);
+
+
+				let scenelistener = (e) => {
+					if (e.profile) {
+						viewer.profileWindowController.setProfile(e.profile);
+					}
+				};
+
+				if (!scene.hasEventListener('profile_added', scenelistener)) {
+					scene.addEventListener('profile_added', scenelistener);
+				}
 		});
 		
 		
