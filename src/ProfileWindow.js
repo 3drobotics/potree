@@ -5,7 +5,7 @@ const d3Scale = require('d3-scale');
 const d3Axis = require('d3-axis');
 
 const PointCloudMaterial = require('./materials/PointCloudMaterial');
-const context = require('./context');
+// const context = require('./context');
 const addCommas = require('./utils/addCommas');
 const Points = require('./Points');
 // const CSVExporter = require('./exporter/CSVExporter');
@@ -15,7 +15,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 	constructor () {
 		super();
 
-		this.elRoot = document.getElementById('profile_window');
+		// this.elRoot = document.getElementById('profile_window');
 		this.renderArea = document.getElementById('profileCanvasContainer');
 		this.svg = d3Selection.select('svg#profileSVG');
 		this.mouseIsDown = false;
@@ -107,7 +107,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 		});
 
 		this.renderArea.addEventListener('mouseup', (e) => {
-			this.mouseIsDown = true;
+			this.mouseIsDown = false;
 		});
 
 		this.renderArea.addEventListener('mousemove', (e) => {
@@ -140,7 +140,8 @@ class ProfileWindow extends THREE.EventDispatcher {
 				let point = this.selectPoint(mileage, elevation, radius);
 
 				if (point) {
-					document.getElementById('profileSelectionProperties').fadeIn(200);
+					// KTODO: Change fade
+					// document.getElementById('profileSelectionProperties').fadeIn(200);
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
 					this.pickSphere.position.set(point.mileage, point.position[2], 0);
@@ -187,7 +188,8 @@ class ProfileWindow extends THREE.EventDispatcher {
 						}
 					}
 					html += '</table>';
-					info.html(html);
+
+					info.innerHTML = html;
 
 					this.selectedPoint = point;
 				} else {
@@ -541,15 +543,15 @@ class ProfileWindow extends THREE.EventDispatcher {
 		this.render();
 	}
 
-	show () {
-		this.elRoot.fadeIn();
-		this.enabled = true;
-	}
+	// show () {
+	// 	this.elRoot.fadeIn();
+	// 	this.enabled = true;
+	// }
 
-	hide () {
-		this.elRoot.fadeOut();
-		this.enabled = false;
-	}
+	// hide () {
+	// 	this.elRoot.fadeOut();
+	// 	this.enabled = false;
+	// }
 
 	updateScales () {
 		let width = this.renderArea.clientWidth;
