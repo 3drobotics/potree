@@ -141,6 +141,20 @@ class PotreeViewer extends THREE.EventDispatcher {
 		let scene = new Scene(this.renderer);
 		this.setScene(scene);
 
+		// Add listeners for elevation profile
+		// This was previously done in initSidebar
+		{
+			const scenelistener = (e) => {
+				if (e.profile) {
+					this.profileWindowController.setProfile(e.profile);
+				}
+			};
+
+			if (!this.scene.hasEventListener('profile_added', scenelistener)) {
+				this.scene.addEventListener('profile_added', scenelistener);
+			}
+		}
+
 		this.profileWindow = new ProfileWindow(this);
 		this.profileWindowController = new ProfileWindowController(this);
 		{

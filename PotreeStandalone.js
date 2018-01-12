@@ -51644,7 +51644,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 				if (point) {
 					// KTODO: Change fade
-					// document.getElementById('profileSelectionProperties').fadeIn(200);
+					document.getElementById('profileSelectionProperties').style.display = 'block';
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
 					this.pickSphere.position.set(point.mileage, point.position[2], 0);
@@ -52041,7 +52041,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 			.forEach(c => this.scene.remove(c));
 
 		// KTODO: check if needed
-		// document.getElementById('profileSelectionProperties').hide();
+		document.getElementById('profileSelectionProperties').style.display = 'none';
 
 		this.render();
 	}
@@ -60921,6 +60921,20 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 		let scene = new Scene(this.renderer);
 		this.setScene(scene);
+
+		// Add listeners for elevation profile
+		// This was previously done in initSidebar
+		{
+			const scenelistener = (e) => {
+				if (e.profile) {
+					this.profileWindowController.setProfile(e.profile);
+				}
+			};
+
+			if (!this.scene.hasEventListener('profile_added', scenelistener)) {
+				this.scene.addEventListener('profile_added', scenelistener);
+			}
+		}
 
 		this.profileWindow = new ProfileWindow(this);
 		this.profileWindowController = new ProfileWindowController(this);
