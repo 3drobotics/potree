@@ -99,7 +99,7 @@ class EDLRenderer {
 		}
 
 		viewer.measuringTool.update();
-		// viewer.profileTool.update();
+		viewer.profileTool.update();
 		// viewer.transformationTool.update();
 		// viewer.volumeTool.update();
 
@@ -160,7 +160,7 @@ class EDLRenderer {
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);
 		// viewer.renderer.render(viewer.volumeTool.sceneVolume, camera);
 		// viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
-		// viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
+		viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
 		// viewer.renderer.render(viewer.transformationTool.sceneTransform, camera);
 
 		viewer.renderer.setViewport(
