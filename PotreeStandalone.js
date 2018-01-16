@@ -3327,7 +3327,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 })));
 
 },{"d3-color":5}],8:[function(require,module,exports){
-// https://d3js.org/d3-scale/ Version 1.0.6. Copyright 2017 Mike Bostock.
+// https://d3js.org/d3-scale/ Version 1.0.7. Copyright 2017 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-interpolate'), require('d3-format'), require('d3-time'), require('d3-time-format'), require('d3-color')) :
 	typeof define === 'function' && define.amd ? define(['exports', 'd3-array', 'd3-collection', 'd3-interpolate', 'd3-format', 'd3-time', 'd3-time-format', 'd3-color'], factory) :
@@ -4092,7 +4092,7 @@ function calendar(year, month, week, day, hour, minute, second, millisecond, for
         step = i[1];
         interval = i[0];
       } else {
-        step = d3Array.tickStep(start, stop, interval);
+        step = Math.max(d3Array.tickStep(start, stop, interval), 1);
         interval = millisecond;
       }
     }
@@ -51651,7 +51651,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 					let info = document.getElementById('profileSelectionProperties');
 					let html = '<table>';
-					for (let attribute of Object.keys(point)) {
+					for (let attribute of Object.keys(point).filter(i => ['classification', 'mileage'].indexOf(i) === -1)) {
 						let value = point[attribute];
 						if (attribute === 'position') {
 							let values = [...value].map(v => addCommas(v.toFixed(3)));
@@ -51969,6 +51969,8 @@ class ProfileWindow extends THREE.EventDispatcher {
 				} else if (attribute === 'color') {
 					geometry.attributes[attribute].array.set(buffer);
 				} else if (attribute === 'mileage') {
+					continue;
+				} else if (attribute === 'classification') {
 					continue;
 				} else if (geometry.attributes[attribute] === undefined) {
 					continue;

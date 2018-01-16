@@ -148,7 +148,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 					let info = document.getElementById('profileSelectionProperties');
 					let html = '<table>';
-					for (let attribute of Object.keys(point)) {
+					for (let attribute of Object.keys(point).filter(i => ['classification', 'mileage'].indexOf(i) === -1)) {
 						let value = point[attribute];
 						if (attribute === 'position') {
 							let values = [...value].map(v => addCommas(v.toFixed(3)));
@@ -466,6 +466,8 @@ class ProfileWindow extends THREE.EventDispatcher {
 				} else if (attribute === 'color') {
 					geometry.attributes[attribute].array.set(buffer);
 				} else if (attribute === 'mileage') {
+					continue;
+				} else if (attribute === 'classification') {
 					continue;
 				} else if (geometry.attributes[attribute] === undefined) {
 					continue;
