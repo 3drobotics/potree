@@ -454,7 +454,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 						posBuffer[3 * i + 0] = x;
 						posBuffer[3 * i + 1] = y;
-						posBuffer[3 * i + 2] = y;
+						posBuffer[3 * i + 2] = 0;
 						projectedBox.expandByPoint(new THREE.Vector3(x, y, 0));
 					}
 

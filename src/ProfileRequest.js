@@ -157,7 +157,7 @@ class ProfileRequest {
 					let filteredBuffer = null;
 
 					if (attribute === 'position') {
-						filteredBuffer = new Type(acceptedPositions);
+						filteredBuffer = new Float64Array(acceptedPositions);
 					} else {
 						filteredBuffer = new Type(accepted.length * bufferedAttribute.itemSize);
 
