@@ -177,6 +177,11 @@ class Measure extends THREE.Object3D {
 						'measurement': this,
 						'index': i
 					});
+					e.viewer.dispatchEvent({
+						type: 'marker_dropped',
+						measurement: this,
+						index: i
+					});
 				}
 			};
 
