@@ -90,6 +90,11 @@ class ProfileTool extends THREE.EventDispatcher {
 
 		cancel.callback = e => {
 			profile.removeMarker(profile.points.length - 1);
+
+			this.viewer.dispatchEvent({
+				type: 'finish_inserting_profile',
+				profile: profile
+			});
 			domElement.removeEventListener('mouseup', insertionCallback, true);
 			this.viewer.removeEventListener('cancel_insertions', cancel.callback);
 		};

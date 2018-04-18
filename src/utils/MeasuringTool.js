@@ -89,6 +89,9 @@ class MeasuringTool extends THREE.EventDispatcher {
 			if (cancel.removeLastMarker) {
 				measure.removeMarker(measure.points.length - 1);
 			}
+			this.viewer.dispatchEvent({
+				type: 'finish_infinite_measurement'
+			});
 			domElement.removeEventListener('mouseup', insertionCallback, true);
 			this.viewer.removeEventListener('cancel_insertions', cancel.callback);
 		};

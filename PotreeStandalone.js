@@ -58148,6 +58148,17 @@ class Measure extends THREE.Object3D {
 
 			let drop = e => {
 				let i = this.spheres.indexOf(e.drag.object);
+
+				// Track when a measurement has finished
+				// Point measurements don't have the cancel_insertions callback
+				// All others will have this removed when the last point is being set
+				if (e.viewer._listeners.cancel_insertions === undefined || !e.viewer._listeners.cancel_insertions.length) {
+					e.viewer.dispatchEvent({
+						'type': 'finish_measurement',
+						measurement: this,
+						index: i
+					});
+				}
 				if (i !== -1) {
 					this.dispatchEvent({
 						'type': 'marker_dropped',
@@ -58641,6 +58652,9 @@ class MeasuringTool extends THREE.EventDispatcher {
 			if (cancel.removeLastMarker) {
 				measure.removeMarker(measure.points.length - 1);
 			}
+			this.viewer.dispatchEvent({
+				type: 'finish_infinite_measurement'
+			});
 			domElement.removeEventListener('mouseup', insertionCallback, true);
 			this.viewer.removeEventListener('cancel_insertions', cancel.callback);
 		};
@@ -59226,6 +59240,11 @@ class ProfileTool extends THREE.EventDispatcher {
 
 		cancel.callback = e => {
 			profile.removeMarker(profile.points.length - 1);
+
+			this.viewer.dispatchEvent({
+				type: 'finish_inserting_profile',
+				profile: profile
+			});
 			domElement.removeEventListener('mouseup', insertionCallback, true);
 			this.viewer.removeEventListener('cancel_insertions', cancel.callback);
 		};
