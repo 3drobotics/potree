@@ -8,12 +8,15 @@ const PointCloudMaterial = require('./materials/PointCloudMaterial');
 // const context = require('./context');
 const addCommas = require('./utils/addCommas');
 const Points = require('./Points');
+const getUnitValue = require('./utils/getUnitValue');
 // const CSVExporter = require('./exporter/CSVExporter');
 // const LASExporter = require('./exporter/LASExporter');
 
 class ProfileWindow extends THREE.EventDispatcher {
-	constructor () {
-		super();
+	constructor (viewer) {
+		super(viewer);
+
+		this.viewer = viewer;
 
 		// this.elRoot = document.getElementById('profile_window');
 		this.renderArea = document.getElementById('profileCanvasContainer');
@@ -555,6 +558,14 @@ class ProfileWindow extends THREE.EventDispatcher {
 	// 	this.enabled = false;
 	// }
 
+	getDomainX () {
+		return [getUnitValue(this.camera.left + this.camera.position.x, this.viewer.lengthUnit.code), getUnitValue(this.camera.right + this.camera.position.x, this.viewer.lengthUnit.code)];
+	}
+
+	getDomainY () {
+		return [getUnitValue(this.camera.bottom + this.camera.position.y, this.viewer.lengthUnit.code), getUnitValue(this.camera.top + this.camera.position.y, this.viewer.lengthUnit.code)];
+	}
+
 	updateScales () {
 		let width = this.renderArea.clientWidth;
 		let height = this.renderArea.clientHeight;
@@ -570,9 +581,9 @@ class ProfileWindow extends THREE.EventDispatcher {
 		this.camera.bottom = bottom;
 		this.camera.updateProjectionMatrix();
 
-		this.scaleX.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
+		this.scaleX.domain(this.getDomainX())
 			.range([0, width]);
-		this.scaleY.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
+		this.scaleY.domain(this.getDomainY())
 			.range([height, 0]);
 	}
 
