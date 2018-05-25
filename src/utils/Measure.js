@@ -2,10 +2,7 @@ const THREE = require('three');
 const TextSprite = require('../TextSprite');
 const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
 const addCommas = require('./addCommas');
-
-const M_TO_FEET = 3.28084;
-const M_TO_SURVEY_FEET = 3937 / 1200;
-const M_TO_INCH = 39.37008;
+const getUnitValue = require('./getUnitValue');
 
 class Measure extends THREE.Object3D {
 	constructor () {
@@ -275,7 +272,7 @@ class Measure extends THREE.Object3D {
 			j = i;
 		}
 		const result = Math.abs(area / 2);
-		return this.getUnitValue(result, true);
+		return getUnitValue(result, this.lengthUnit.code, true);
 	};
 
 	getTotalDistance () {
@@ -322,23 +319,6 @@ class Measure extends THREE.Object3D {
 		return this.getAngleBetweenLines(point, previous, next);
 	};
 
-	// Convert m to feet, inches. Can also be used for converting areas
-	getUnitValue (val, area = false) {
-		const power = area ? 2 : 1;
-		switch (this.lengthUnit.code) {
-			case 'm':
-				return val;
-			case 'ft':
-				return val * Math.pow(M_TO_FEET, power);
-			case 'foot_survey_us':
-				return val * Math.pow(M_TO_SURVEY_FEET, power);
-			case '″':
-				return val * Math.pow(M_TO_INCH, power);
-			default:
-				return val;
-		}
-	}
-
 	formatLabel (val) {
 		if (val === 'foot_survey_us') {
 			return 'ft';
@@ -363,7 +343,7 @@ class Measure extends THREE.Object3D {
 				/* let msg = addCommas(position.x.toFixed(2))
 					+ " / " + addCommas(position.y.toFixed(2))
 					+ " / " + addCommas(position.z.toFixed(2)); */
-				let msg = addCommas(this.getUnitValue(position.z).toFixed(2) + ' ' + this.formatLabel(this.lengthUnit.code));
+				let msg = addCommas(getUnitValue(position.z, this.lengthUnit.code).toFixed(2) + ' ' + this.formatLabel(this.lengthUnit.code));
 				coordinateLabel.setText(msg);
 
 				coordinateLabel.visible = this.showCoordinates;
@@ -420,7 +400,7 @@ class Measure extends THREE.Object3D {
 				let distance = point.position.distanceTo(nextPoint.position);
 
 				edgeLabel.position.copy(center);
-				edgeLabel.setText(addCommas(this.getUnitValue(distance).toFixed(2)) + ' ' + this.formatLabel(this.lengthUnit.code));
+				edgeLabel.setText(addCommas(getUnitValue(distance, this.lengthUnit.code).toFixed(2)) + ' ' + this.formatLabel(this.lengthUnit.code));
 				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
 			}
 
@@ -495,7 +475,7 @@ class Measure extends THREE.Object3D {
 
 				let heightLabelPosition = start.clone().add(end).multiplyScalar(0.5);
 				this.heightLabel.position.copy(heightLabelPosition);
-				let msg = addCommas(this.getUnitValue(height).toFixed(2)) + ' ' + this.formatLabel(this.lengthUnit.code);
+				let msg = addCommas(getUnitValue(height, this.lengthUnit.code).toFixed(2)) + ' ' + this.formatLabel(this.lengthUnit.code);
 				this.heightLabel.setText(msg);
 			}
 		}
