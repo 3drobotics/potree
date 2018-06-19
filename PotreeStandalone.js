@@ -51515,6 +51515,8 @@ const getUnitValue = require('./utils/getUnitValue');
 // const CSVExporter = require('./exporter/CSVExporter');
 // const LASExporter = require('./exporter/LASExporter');
 
+const FEET_TO_M = 1 / 3.28084;
+
 class ProfileWindow extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super(viewer);
@@ -51643,6 +51645,11 @@ class ProfileWindow extends THREE.EventDispatcher {
 				let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
 				let mileage = this.scaleX.invert(newMouse.x);
 				let elevation = this.scaleY.invert(newMouse.y);
+				if (this.viewer.lengthUnit.code === 'ft' || this.viewer.lengthUnit.code === 'foot_survey_us') {
+					radius *= FEET_TO_M;
+					mileage *= FEET_TO_M;
+					elevation *= FEET_TO_M;
+				}
 				let point = this.selectPoint(mileage, elevation, radius);
 
 				if (point) {
@@ -51669,7 +51676,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 								</tr>
 								<tr>
 									<td>z</td>
-									<td>${values[2]}</td>
+									<td>${getUnitValue(values[2], this.viewer.lengthUnit.code)}</td>
 								</tr>`;
 						} else if (attribute === 'color') {
 							html += `
@@ -52098,6 +52105,9 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 		{ // THREEJS
 			let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
+			if (this.viewer.lengthUnit.code === 'ft' || this.viewer.lengthUnit.code === 'foot_survey_us') {
+				radius *= FEET_TO_M;
+			}
 			this.pickSphere.scale.set(radius, radius, radius);
 			this.pickSphere.position.z = this.camera.far - radius;
 
