@@ -51511,12 +51511,17 @@ const PointCloudMaterial = require('./materials/PointCloudMaterial');
 // const context = require('./context');
 const addCommas = require('./utils/addCommas');
 const Points = require('./Points');
+const getUnitValue = require('./utils/getUnitValue');
 // const CSVExporter = require('./exporter/CSVExporter');
 // const LASExporter = require('./exporter/LASExporter');
 
+const FEET_TO_M = 1 / 3.28084;
+
 class ProfileWindow extends THREE.EventDispatcher {
-	constructor () {
-		super();
+	constructor (viewer) {
+		super(viewer);
+
+		this.viewer = viewer;
 
 		// this.elRoot = document.getElementById('profile_window');
 		this.renderArea = document.getElementById('profileCanvasContainer');
@@ -51640,6 +51645,11 @@ class ProfileWindow extends THREE.EventDispatcher {
 				let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
 				let mileage = this.scaleX.invert(newMouse.x);
 				let elevation = this.scaleY.invert(newMouse.y);
+				if (this.viewer.lengthUnit.code === 'ft' || this.viewer.lengthUnit.code === 'foot_survey_us') {
+					radius *= FEET_TO_M;
+					mileage *= FEET_TO_M;
+					elevation *= FEET_TO_M;
+				}
 				let point = this.selectPoint(mileage, elevation, radius);
 
 				if (point) {
@@ -51666,7 +51676,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 								</tr>
 								<tr>
 									<td>z</td>
-									<td>${values[2]}</td>
+									<td>${getUnitValue(values[2], this.viewer.lengthUnit.code)}</td>
 								</tr>`;
 						} else if (attribute === 'color') {
 							html += `
@@ -52058,6 +52068,14 @@ class ProfileWindow extends THREE.EventDispatcher {
 	// 	this.enabled = false;
 	// }
 
+	getDomainX () {
+		return [getUnitValue(this.camera.left + this.camera.position.x, this.viewer.lengthUnit.code), getUnitValue(this.camera.right + this.camera.position.x, this.viewer.lengthUnit.code)];
+	}
+
+	getDomainY () {
+		return [getUnitValue(this.camera.bottom + this.camera.position.y, this.viewer.lengthUnit.code), getUnitValue(this.camera.top + this.camera.position.y, this.viewer.lengthUnit.code)];
+	}
+
 	updateScales () {
 		let width = this.renderArea.clientWidth;
 		let height = this.renderArea.clientHeight;
@@ -52073,9 +52091,9 @@ class ProfileWindow extends THREE.EventDispatcher {
 		this.camera.bottom = bottom;
 		this.camera.updateProjectionMatrix();
 
-		this.scaleX.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
+		this.scaleX.domain(this.getDomainX())
 			.range([0, width]);
-		this.scaleY.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
+		this.scaleY.domain(this.getDomainY())
 			.range([height, 0]);
 	}
 
@@ -52087,6 +52105,9 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 		{ // THREEJS
 			let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
+			if (this.viewer.lengthUnit.code === 'ft' || this.viewer.lengthUnit.code === 'foot_survey_us') {
+				radius *= FEET_TO_M;
+			}
 			this.pickSphere.scale.set(radius, radius, radius);
 			this.pickSphere.position.z = this.camera.far - radius;
 
@@ -52137,7 +52158,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 module.exports = ProfileWindow;
 
-},{"./Points":20,"./materials/PointCloudMaterial":39,"./utils/addCommas":65,"d3-axis":3,"d3-scale":8,"d3-selection":9,"three":14}],24:[function(require,module,exports){
+},{"./Points":20,"./materials/PointCloudMaterial":39,"./utils/addCommas":65,"./utils/getUnitValue":72,"d3-axis":3,"d3-scale":8,"d3-selection":9,"three":14}],24:[function(require,module,exports){
 class ProfileWindowController {
 	constructor (viewer) {
 		this.viewer = viewer;
@@ -52500,7 +52521,7 @@ Potree.Measure = require('./utils/Measure');
 
 module.exports = Potree;
 
-},{"./context":27,"./loader/POCLoader":30,"./materials/PointShape":41,"./materials/PointSizeType":42,"./utils/Measure":60,"./utils/loadPointCloud":72,"./viewer/Viewer":86,"./webgl/GLQueries":87}],29:[function(require,module,exports){
+},{"./context":27,"./loader/POCLoader":30,"./materials/PointShape":41,"./materials/PointSizeType":42,"./utils/Measure":60,"./utils/loadPointCloud":73,"./viewer/Viewer":87,"./webgl/GLQueries":88}],29:[function(require,module,exports){
 const Version = require('../Version');
 const PointAttributeNames = require('./PointAttributeNames');
 const THREE = require('three');
@@ -55379,7 +55400,7 @@ class EarthControls extends THREE.EventDispatcher {
 
 module.exports = EarthControls;
 
-},{"../utils/Mouse":62,"../utils/getMousePointCloudIntersection":70,"../utils/projectedRadius":73,"@tweenjs/tween.js":1,"three":14}],49:[function(require,module,exports){
+},{"../utils/Mouse":62,"../utils/getMousePointCloudIntersection":70,"../utils/projectedRadius":74,"@tweenjs/tween.js":1,"three":14}],49:[function(require,module,exports){
 const THREE = require('three');
 const TWEEN = require('@tweenjs/tween.js');
 const MOUSE = require('../utils/Mouse');
@@ -57979,10 +58000,7 @@ const THREE = require('three');
 const TextSprite = require('../TextSprite');
 const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
 const addCommas = require('./addCommas');
-
-const M_TO_FEET = 3.28084;
-const M_TO_SURVEY_FEET = 3937 / 1200;
-const M_TO_INCH = 39.37008;
+const getUnitValue = require('./getUnitValue');
 
 class Measure extends THREE.Object3D {
 	constructor () {
@@ -58252,7 +58270,7 @@ class Measure extends THREE.Object3D {
 			j = i;
 		}
 		const result = Math.abs(area / 2);
-		return this.getUnitValue(result, true);
+		return getUnitValue(result, this.lengthUnit.code, true);
 	};
 
 	getTotalDistance () {
@@ -58299,23 +58317,6 @@ class Measure extends THREE.Object3D {
 		return this.getAngleBetweenLines(point, previous, next);
 	};
 
-	// Convert m to feet, inches. Can also be used for converting areas
-	getUnitValue (val, area = false) {
-		const power = area ? 2 : 1;
-		switch (this.lengthUnit.code) {
-			case 'm':
-				return val;
-			case 'ft':
-				return val * Math.pow(M_TO_FEET, power);
-			case 'foot_survey_us':
-				return val * Math.pow(M_TO_SURVEY_FEET, power);
-			case '″':
-				return val * Math.pow(M_TO_INCH, power);
-			default:
-				return val;
-		}
-	}
-
 	formatLabel (val) {
 		if (val === 'foot_survey_us') {
 			return 'ft';
@@ -58340,7 +58341,7 @@ class Measure extends THREE.Object3D {
 				/* let msg = addCommas(position.x.toFixed(2))
 					+ " / " + addCommas(position.y.toFixed(2))
 					+ " / " + addCommas(position.z.toFixed(2)); */
-				let msg = addCommas(this.getUnitValue(position.z).toFixed(2) + ' ' + this.formatLabel(this.lengthUnit.code));
+				let msg = addCommas(getUnitValue(position.z, this.lengthUnit.code).toFixed(2) + ' ' + this.formatLabel(this.lengthUnit.code));
 				coordinateLabel.setText(msg);
 
 				coordinateLabel.visible = this.showCoordinates;
@@ -58397,7 +58398,7 @@ class Measure extends THREE.Object3D {
 				let distance = point.position.distanceTo(nextPoint.position);
 
 				edgeLabel.position.copy(center);
-				edgeLabel.setText(addCommas(this.getUnitValue(distance).toFixed(2)) + ' ' + this.formatLabel(this.lengthUnit.code));
+				edgeLabel.setText(addCommas(getUnitValue(distance, this.lengthUnit.code).toFixed(2)) + ' ' + this.formatLabel(this.lengthUnit.code));
 				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
 			}
 
@@ -58472,7 +58473,7 @@ class Measure extends THREE.Object3D {
 
 				let heightLabelPosition = start.clone().add(end).multiplyScalar(0.5);
 				this.heightLabel.position.copy(heightLabelPosition);
-				let msg = addCommas(this.getUnitValue(height).toFixed(2)) + ' ' + this.formatLabel(this.lengthUnit.code);
+				let msg = addCommas(getUnitValue(height, this.lengthUnit.code).toFixed(2)) + ' ' + this.formatLabel(this.lengthUnit.code);
 				this.heightLabel.setText(msg);
 			}
 		}
@@ -58560,7 +58561,7 @@ class Measure extends THREE.Object3D {
 
 module.exports = Measure;
 
-},{"../TextSprite":25,"./addCommas":65,"./getMousePointCloudIntersection":70,"three":14}],61:[function(require,module,exports){
+},{"../TextSprite":25,"./addCommas":65,"./getMousePointCloudIntersection":70,"./getUnitValue":72,"three":14}],61:[function(require,module,exports){
 const THREE = require('three');
 const Measure = require('./Measure');
 const projectedRadius = require('./projectedRadius');
@@ -58817,7 +58818,7 @@ class MeasuringTool extends THREE.EventDispatcher {
 
 module.exports = MeasuringTool;
 
-},{"../viewer/CameraMode":80,"./Measure":60,"./projectedRadius":73,"./projectedRadiusOrtho":74,"three":14}],62:[function(require,module,exports){
+},{"../viewer/CameraMode":81,"./Measure":60,"./projectedRadius":74,"./projectedRadiusOrtho":75,"three":14}],62:[function(require,module,exports){
 module.exports = {
 	LEFT: 0b0001,
 	RIGHT: 0b0010,
@@ -59285,7 +59286,7 @@ class ProfileTool extends THREE.EventDispatcher {
 
 module.exports = ProfileTool;
 
-},{"../viewer/CameraMode":80,"./Profile":63,"./projectedRadius":73,"./projectedRadiusOrtho":74,"three":14}],65:[function(require,module,exports){
+},{"../viewer/CameraMode":81,"./Profile":63,"./projectedRadius":74,"./projectedRadiusOrtho":75,"three":14}],65:[function(require,module,exports){
 /**
  * add separators to large numbers
  *
@@ -59482,6 +59483,28 @@ module.exports = (name) => {
 };
 
 },{}],72:[function(require,module,exports){
+const M_TO_FEET = 3.28084;
+const M_TO_SURVEY_FEET = 3937 / 1200;
+const M_TO_INCH = 39.37008;
+
+// Convert m to feet, inches. Can also be used for converting areas
+module.exports = (val, units, area = false) => {
+	const power = area ? 2 : 1;
+	switch (units) {
+		case 'm':
+			return val;
+		case 'ft':
+			return val * Math.pow(M_TO_FEET, power);
+		case 'foot_survey_us':
+			return val * Math.pow(M_TO_SURVEY_FEET, power);
+		case '″':
+			return val * Math.pow(M_TO_INCH, power);
+		default:
+			return val;
+	}
+};
+
+},{}],73:[function(require,module,exports){
 /* eslint-disable standard/no-callback-literal */
 const PointCloudOctree = require('../tree/PointCloudOctree');
 // const PointCloudArena4D = require('../arena4d/PointCloudArena4D');
@@ -59532,7 +59555,7 @@ module.exports = function (path, name, callback) {
 	}
 };
 
-},{"../loader/POCLoader":30,"../tree/PointCloudOctree":54}],73:[function(require,module,exports){
+},{"../loader/POCLoader":30,"../tree/PointCloudOctree":54}],74:[function(require,module,exports){
 module.exports = (radius, fov, distance, screenHeight) => {
 	let projFactor = (1 / Math.tan(fov / 2)) / distance;
 	projFactor = projFactor * screenHeight / 2;
@@ -59540,7 +59563,7 @@ module.exports = (radius, fov, distance, screenHeight) => {
 	return radius * projFactor;
 };
 
-},{}],74:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = function (radius, proj, screenWidth, screenHeight) {
@@ -59558,7 +59581,7 @@ module.exports = function (radius, proj, screenWidth, screenHeight) {
 	return p1.distanceTo(p2);
 };
 
-},{"three":14}],75:[function(require,module,exports){
+},{"three":14}],76:[function(require,module,exports){
 const THREE = require('three');
 
 module.exports = new function () {
@@ -59581,7 +59604,7 @@ module.exports = new function () {
 	};
 }();
 
-},{"three":14}],76:[function(require,module,exports){
+},{"three":14}],77:[function(require,module,exports){
 const updateVisibility = require('./updateVisibility');
 const context = require('../context');
 
@@ -59606,7 +59629,7 @@ module.exports = function (pointclouds, camera, renderer) {
 	return result;
 };
 
-},{"../context":27,"./updateVisibility":77}],77:[function(require,module,exports){
+},{"../context":27,"./updateVisibility":78}],78:[function(require,module,exports){
 const updateVisibilityStructures = require('./updateVisibilityStructures');
 const THREE = require('three');
 const context = require('../context');
@@ -59804,7 +59827,7 @@ module.exports = function (pointclouds, camera, renderer) {
 	};
 };
 
-},{"../context":27,"../materials/ClipMode":36,"../tree/DEM":52,"../utils/Box3Helper":59,"./updateVisibilityStructures":78,"three":14}],78:[function(require,module,exports){
+},{"../context":27,"../materials/ClipMode":36,"../tree/DEM":52,"../utils/Box3Helper":59,"./updateVisibilityStructures":79,"three":14}],79:[function(require,module,exports){
 const BinaryHeap = require('./BinaryHeap');
 const THREE = require('three');
 
@@ -59867,7 +59890,7 @@ module.exports = function updateVisibilityStructures (pointclouds, camera, rende
 	};
 };
 
-},{"./BinaryHeap":58,"three":14}],79:[function(require,module,exports){
+},{"./BinaryHeap":58,"three":14}],80:[function(require,module,exports){
 
 module.exports = function (camera, node, factor) {
 	if (!node.geometry && !node.boundingSphere && !node.boundingBox) {
@@ -59955,13 +59978,13 @@ module.exports = function (camera, node, factor) {
 //
 // }
 
-},{}],80:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 module.exports = {
 	ORTHOGRAPHIC: 0,
 	PERSPECTIVE: 1
 };
 
-},{}],81:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 const EyeDomeLightingMaterial = require('../materials/EyeDomeLightingMaterial');
 const THREE = require('three');
 const screenPass = require('../utils/screenPass');
@@ -60140,7 +60163,7 @@ class EDLRenderer {
 
 module.exports = EDLRenderer;
 
-},{"../materials/EyeDomeLightingMaterial":37,"../utils/screenPass":75,"three":14}],82:[function(require,module,exports){
+},{"../materials/EyeDomeLightingMaterial":37,"../utils/screenPass":76,"three":14}],83:[function(require,module,exports){
 const THREE = require('three');
 const context = require('../context');
 
@@ -60256,7 +60279,7 @@ class NavigationCube extends THREE.Object3D {
 
 module.exports = NavigationCube;
 
-},{"../context":27,"three":14}],83:[function(require,module,exports){
+},{"../context":27,"three":14}],84:[function(require,module,exports){
 class PotreeRenderer {
 	constructor (viewer) {
 		this.viewer = viewer;
@@ -60361,7 +60384,7 @@ class PotreeRenderer {
 
 module.exports = PotreeRenderer;
 
-},{}],84:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 const THREE = require('three');
 // const Annotation = require('../Annotation');
 const View = require('./View');
@@ -60685,7 +60708,7 @@ class Scene extends THREE.EventDispatcher {
 
 module.exports = Scene;
 
-},{"../utils/createBackgroundTexture":67,"../utils/createGrid":68,"./CameraMode":80,"./View":85,"three":14}],85:[function(require,module,exports){
+},{"../utils/createBackgroundTexture":67,"../utils/createGrid":68,"./CameraMode":81,"./View":86,"three":14}],86:[function(require,module,exports){
 const THREE = require('three');
 const OrbitControls = require('../navigation/OrbitControls');
 
@@ -60804,7 +60827,7 @@ class View {
 
 module.exports = View;
 
-},{"../navigation/OrbitControls":51,"three":14}],86:[function(require,module,exports){
+},{"../navigation/OrbitControls":51,"three":14}],87:[function(require,module,exports){
 
 // let getQueryParam = function(name) {
 //    name = name.replace(/[\[\]]/g, "\\$&");
@@ -62124,7 +62147,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 module.exports = PotreeViewer;
 
-},{"../Features":15,"../ProfileWindow":23,"../ProfileWindowController":24,"../context":27,"../navigation/EarthControls":48,"../navigation/FirstPersonControls":49,"../navigation/InputHandler":50,"../navigation/OrbitControls":51,"../utils/MeasuringTool":61,"../utils/ProfileTool":64,"../utils/computeTransformedBoundingBox":66,"../utils/getParameterByName":71,"../utils/updatePointClouds":76,"../utils/zoomTo":79,"../webgl/GLQueries":87,"./CameraMode":80,"./EDLRenderer":81,"./NavigationCube":82,"./PotreeRenderer":83,"./Scene":84,"@tweenjs/tween.js":1,"stats.js":13,"three":14}],87:[function(require,module,exports){
+},{"../Features":15,"../ProfileWindow":23,"../ProfileWindowController":24,"../context":27,"../navigation/EarthControls":48,"../navigation/FirstPersonControls":49,"../navigation/InputHandler":50,"../navigation/OrbitControls":51,"../utils/MeasuringTool":61,"../utils/ProfileTool":64,"../utils/computeTransformedBoundingBox":66,"../utils/getParameterByName":71,"../utils/updatePointClouds":77,"../utils/zoomTo":80,"../webgl/GLQueries":88,"./CameraMode":81,"./EDLRenderer":82,"./NavigationCube":83,"./PotreeRenderer":84,"./Scene":85,"@tweenjs/tween.js":1,"stats.js":13,"three":14}],88:[function(require,module,exports){
 const queriesPerGL = new Map();
 let cached = false;
 
