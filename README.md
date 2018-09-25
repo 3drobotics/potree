@@ -1,82 +1,30 @@
-[![Build Status](https://travis-ci.org/potree/potree.svg?branch=master)](https://travis-ci.org/potree/potree) [![js-happiness-style](https://img.shields.io/badge/code%20style-happiness-brightgreen.svg)](https://github.com/JedWatson/happiness) [![Gitter potree/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/potree/Lobby)
-
 # README
-
 * [Getting Started](./docs/getting_started.md)
 
-## About
+## Modifying Potree Workflow
+1. Clone repo
+2. `npm install --save-dev`
+3. `npm run watch+liveserver`: Automatically opens tab on localhost:8080
+4. Navigate to build/potree/examples/without_gui.html: ensure the point cloud viewer works correctly, and there are no errors in the console
 
-Potree is a free open-source WebGL based point cloud renderer for large point clouds.
+## Potree Development Workflow with Sitescan Manager
+Linking the yarn module to a local source allows for easily modifying the Potree package and viewing changes in sitescan
+1. Clone potree repo
+2. `yarn link` from potree directory
+3. `yarn link "potree"` from sitescan-manager directory
+4. `npm run-script build` from potree to build the standalone file
+5. You'll need to close the current server and run `yarn start` again
+6. sitescan-manager will now use the updated package!
 
-It is based on the [TU Wien Scanopy project](https://www.cg.tuwien.ac.at/research/projects/Scanopy/)
-
-
-<a href="http://potree.org/wp/demo/" target="_blank"> ![](./docs/images/potree_screens.png) </a>
-
-Potree was part of the [Harvest4D Project](https://harvest4d.org/)
-
-Newest information and work in progress is usually available on [twitter](https://twitter.com/m_schuetz)
-
-General infos, downloads, showcase, etc. at [potree.org](http://potree.org/)
-
-Contact: Markus Schütz - mschuetz@potree.org
-
-## Downloads
-
-[PotreeConverter source and Win64 binaries](https://github.com/potree/PotreeConverter/releases)
-
-## Build
-
-* Install [Node.js](https://nodejs.org/en/) and download this repository.
-* Open a console window
-* Change into the potree directory and install the dependencies:
-
-```
-cd <potree_directory>
-npm install --save-dev
-```
-
-* Create the build, including a minified version:
-
-```
-npm run build
-npm run min:script:*
-```
-
-Watch commands are helpful during development since they automatically rebuild the project whenever you modify a source file. The ```+webserver``` variant also starts a webserver, which is needed to test potree pages on your local machine.
-The ```+liveserver``` version is the same as the webserver version, except it also automatically refreshes your browser when you modify the source.
-
-It's recommended to use ```npm run watch+liveserver```. 
-On startup, it will open a browser page at ```http://localhost:8080/```. Open the examples folder to select various demo pages.
-
-```
-npm run watch
-npm run watch+webserver
-npm run watch+liveserver
-```
+## Updating Potree Workflow
+1. All changes have been made on the `stripped` branch. Push new changes to this branch.
+2. IMPORTANT: When you want these changes to be used by sitescan-manager, you must increment the version # in the package.json file.
+3. The next time the website is deployed, it will use the updated version of Potree.
 
 
-
-## Showcase
-
-Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live examples.
-
-## Compatibility
-
-| Browser              | OS      | Result        |
-| -------------------- |:-------:|:-------------:|
-| Chrome 56            | Win7    | works         |
-| Firefox 51           | Win7    | works         |
-| Internet Explorer 11 | Win7    | not supported |
-| Chrome               | Android | works         |
-| Opera                | Android | not supported |
-
-## Credits
-
-* The multi-res-octree algorithms used by this viewer were developed at the Vienna University of Technology by Michael Wimmer and Claus Scheiblauer as part of the [Scanopy Project](http://www.cg.tuwien.ac.at/research/projects/Scanopy/).
-* [Three.js](https://github.com/mrdoob/three.js), the WebGL 3D rendering library on which potree is built.
-* [plas.io](http://plas.io/) point cloud viewer. LAS and LAZ support have been taken from the laslaz.js implementation of plas.io. Thanks to [Uday Verma](https://twitter.com/udaykverma) and [Howard Butler](https://twitter.com/howardbutler) for this!
-* [Harvest4D](https://harvest4d.org/) Potree currently runs as Master Thesis under the Harvest4D Project
-* Christian Boucheny (EDL developer) and Daniel Girardeau-Montaut ([CloudCompare](http://www.danielgm.net/cc/)). The EDL shader was adapted from the CloudCompare source code!
-* [Martin Isenburg](http://rapidlasso.com/), [Georepublic](http://georepublic.de/en/),
-[Veesus](http://veesus.com/), [Sigeom Sa](http://www.sigeom.ch/), [SITN](http://www.ne.ch/sitn), [LBI ArchPro](http://archpro.lbg.ac.at/),  [Pix4D](http://pix4d.com/) as well as all the contributers to potree and PotreeConverter and many more for their support.
+## Misc Tips
+### Reseting Pointclouds for a mission
+Eventually you will run out of pointclouds to process.
+To reset the pointcloud for a mission:
+1. Get Pointcloud Dataproduct ID via Redux inspector or Postman. 
+2. Postman > Dataproducts > Delete a data product > use the PC ID
