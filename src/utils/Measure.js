@@ -311,8 +311,8 @@ Potree.Measure = class Measure extends THREE.Object3D {
 
 			{ // coordinate labels
 				let coordinateLabel = this.coordinateLabels[0];
-				
-				let msg = position.toArray().map(p => Potree.utils.addCommas(p.toFixed(2))).join(", ");
+
+				let msg = this._formatLabel ? this._formatLabel('coordinate', position) : position.toArray().map(p => Potree.utils.addCommas(p.toFixed(2))).join(", ");
 				//let msg = Potree.utils.addCommas(position.z.toFixed(2) + " " + this.lengthUnit.code);
 				coordinateLabel.setText(msg);
 
@@ -370,7 +370,8 @@ Potree.Measure = class Measure extends THREE.Object3D {
 				let distance = point.position.distanceTo(nextPoint.position);
 
 				edgeLabel.position.copy(center);
-				edgeLabel.setText(Potree.utils.addCommas(distance.toFixed(2)) + ' ' + this.lengthUnit.code);
+				let msg = this._formatLabel ? this._formatLabel('distance', distance) : Potree.utils.addCommas(distance.toFixed(2)) + ' ' + this.lengthUnit.code;
+				edgeLabel.setText(msg);
 				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
 			}
 
@@ -388,7 +389,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 				let labelPos = point.position.clone().add(dir.multiplyScalar(dist));
 				angleLabel.position.copy(labelPos);
 
-				let msg = Potree.utils.addCommas((angle * (180.0 / Math.PI)).toFixed(1)) + '\u00B0';
+				let msg = this._formatLabel ? this._formatLabel('angle', angle) : Potree.utils.addCommas((angle * (180.0 / Math.PI)).toFixed(1)) + '\u00B0';
 				angleLabel.setText(msg);
 
 				angleLabel.visible = this.showAngles && (index < lastIndex || this.closed) && this.points.length >= 3 && angle > 0;
@@ -428,7 +429,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 
 				let heightLabelPosition = start.clone().add(end).multiplyScalar(0.5);
 				this.heightLabel.position.copy(heightLabelPosition);
-				let msg = Potree.utils.addCommas(height.toFixed(2)) + ' ' + this.lengthUnit.code;
+				let msg = this._formatLabel ? this._formatLabel('height', height) : Potree.utils.addCommas(height.toFixed(2)) + ' ' + this.lengthUnit.code;
 				this.heightLabel.setText(msg);
 			}
 		}
@@ -436,7 +437,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 		{ // update area label
 			this.areaLabel.position.copy(centroid);
 			this.areaLabel.visible = this.showArea && this.points.length >= 3;
-			let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + ' ' + this.lengthUnit.code + '\u00B2';
+			let msg = this._formatLabel ? this._formatLabel('area', this.getArea()) : Potree.utils.addCommas(this.getArea().toFixed(1)) + ' ' + this.lengthUnit.code + '\u00B2';
 			this.areaLabel.setText(msg);
 		}
 	};
@@ -511,5 +512,9 @@ Potree.Measure = class Measure extends THREE.Object3D {
 	set showDistances (value) {
 		this._showDistances = value;
 		this.update();
+	}
+	
+	set formatLabel (callback) {
+		this._formatLabel = callback;
 	}
 };

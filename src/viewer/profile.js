@@ -286,48 +286,53 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 					
 
 					let info = this.elRoot.find('#profileSelectionProperties');
-					let html = '<table>';
-					for (let attribute of Object.keys(point)) {
-						let value = point[attribute];
-						if (attribute === 'position') {
-							let values = [...value].map(v => Potree.utils.addCommas(v.toFixed(3)));
-							html += `
-								<tr>
-									<td>x</td>
-									<td>${values[0]}</td>
-								</tr>
-								<tr>
-									<td>y</td>
-									<td>${values[1]}</td>
-								</tr>
-								<tr>
-									<td>z</td>
-									<td>${values[2]}</td>
-								</tr>`;
-						} else if (attribute === 'color') {
-							html += `
-								<tr>
-									<td>${attribute}</td>
-									<td>${value.join(', ')}</td>
-								</tr>`;
-						} else if (attribute === 'normal') {
-							continue;
-						} else if (attribute === 'mileage') {
-							html += `
-								<tr>
-									<td>${attribute}</td>
-									<td>${value.toFixed(3)}</td>
-								</tr>`;
-						} else {
-							html += `
-								<tr>
-									<td>${attribute}</td>
-									<td>${value}</td>
-								</tr>`;
+						
+					if (this._formatSelectionProperties) {
+						info.html(this._formatSelectionProperties(point));
+					} else {
+						let html = '<table>';
+						for (let attribute of Object.keys(point)) {
+							let value = point[attribute];
+							if (attribute === 'position') {
+								let values = [...value].map(v => Potree.utils.addCommas(v.toFixed(3)));
+								html += `
+									<tr>
+										<td>x</td>
+										<td>${values[0]}</td>
+									</tr>
+									<tr>
+										<td>y</td>
+										<td>${values[1]}</td>
+									</tr>
+									<tr>
+										<td>z</td>
+										<td>${values[2]}</td>
+									</tr>`;
+							} else if (attribute === 'color') {
+								html += `
+									<tr>
+										<td>${attribute}</td>
+										<td>${value.join(', ')}</td>
+									</tr>`;
+							} else if (attribute === 'normal') {
+								continue;
+							} else if (attribute === 'mileage') {
+								html += `
+									<tr>
+										<td>${attribute}</td>
+										<td>${value.toFixed(3)}</td>
+									</tr>`;
+							} else {
+								html += `
+									<tr>
+										<td>${attribute}</td>
+										<td>${value}</td>
+									</tr>`;
+							}
 						}
+						html += '</table>';
+						info.html(html);
 					}
-					html += '</table>';
-					info.html(html);
 
 					this.selectedPoint = point;
 				} else {
@@ -808,6 +813,10 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		}
 
 		this.requestScaleUpdate();
+	}
+	
+	set formatSelectionProperties (callback) {
+		this._formatSelectionProperties = callback;
 	}
 };
 
