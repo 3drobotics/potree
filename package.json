@@ -1,13 +1,20 @@
 {
-  "name": "potree",
-  "private": true,
-  "version": "0.0.1",
+  "name": "@3dr/potree",
+  "version": "1.6.1",
   "description": "WebGL point cloud viewer",
+  "main": "build/potree/potree.js",
+  "files": [
+    "build",
+    "libs",
+    "resources",
+    "src"
+  ],
   "scripts": {
     "lint": "eslint src",
-    "test": "npm run lint"
+    "test": "npm run lint",
+    "prepublishOnly": "gulp build"
   },
-  "dependencies": {
+  "devDependencies": {
     "eslint": "^4.18.2",
     "eslint-config-happiness": "^10.2.1",
     "eslint-plugin-import": "^2.9.0",
