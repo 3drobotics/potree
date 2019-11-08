@@ -113,7 +113,7 @@ Potree.webgl = {
 Potree.debug = {};
 
 Potree.scriptPath = null;
-if (document.currentScript.src) {
+if (document.currentScript && document.currentScript.src) {
 	Potree.scriptPath = new URL(document.currentScript.src + '/..').href;
 	if (Potree.scriptPath.slice(-1) === '/') {
 		Potree.scriptPath = Potree.scriptPath.slice(0, -1);
