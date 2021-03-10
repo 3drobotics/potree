@@ -12837,13 +12837,13 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 			if (cancel.removeLastMarker) {
 				measure.removeMarker(measure.points.length - 1);
 			}
-			domElement.removeEventListener('mouseup', insertionCallback, true);
+			domElement.removeEventListener('mouseup', insertionCallback, false);
 			this.viewer.removeEventListener('cancel_insertions', cancel.callback);
 		};
 
 		if (measure.maxMarkers > 1) {
 			this.viewer.addEventListener('cancel_insertions', cancel.callback);
-			domElement.addEventListener('mouseup', insertionCallback, true);
+			domElement.addEventListener('mouseup', insertionCallback, false);
 		}
 
 		measure.addMarker(new THREE.Vector3(0, 0, 0));
@@ -13384,12 +13384,12 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 
 		cancel.callback = e => {
 			profile.removeMarker(profile.points.length - 1);
-			domElement.removeEventListener('mouseup', insertionCallback, true);
+			domElement.removeEventListener('mouseup', insertionCallback, false);
 			this.viewer.removeEventListener('cancel_insertions', cancel.callback);
 		};
 
 		this.viewer.addEventListener('cancel_insertions', cancel.callback);
-		domElement.addEventListener('mouseup', insertionCallback, true);
+		domElement.addEventListener('mouseup', insertionCallback, false);
 
 		profile.addMarker(new THREE.Vector3(0, 0, 0));
 		this.viewer.inputHandler.startDragging(
