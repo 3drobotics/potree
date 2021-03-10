@@ -1,6 +1,6 @@
 {
   "name": "@3dr/potree",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "WebGL point cloud viewer",
   "main": "build/potree/potree.js",
   "files": [
